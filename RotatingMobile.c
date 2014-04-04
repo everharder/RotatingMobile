@@ -16,12 +16,12 @@
 #endif
 
 #define BACKGROUND_COLOR	1.0, 1.0, 1.0, 0.0
-#define FOVY			55.0
-#define ASPECT			 3
+#define FOVY			50.0
+#define ASPECT			 1
 #define NEAR_PLANE	 	 0.5
 #define FAR_PLANE		50.0
-#define CAMERA_DIST		20
-#define CAMERA_ROTATE_ANGLE	 10
+#define CAMERA_DIST		30
+#define CAMERA_ROTATE_ANGLE	10
 #define LEAF_ROTATION_SPD_MAX  	 0.5
 #define LEAF_ROTATION_SPD_MIN  	 0.1
 

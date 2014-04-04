@@ -89,17 +89,13 @@ node_object* parse_mobile(char *filename) {
 		#endif
 
 		//read center
-		fscanf(fp,"center %f %f %f\n", 	&nodes[curr_obj]->obj.x,
-						&nodes[curr_obj]->obj.y,
-						&nodes[curr_obj]->obj.z);
-		#ifdef _DEBUG__DEBUG_OBJPARSER_
-		printf("\n\ncenter_x: %f\ncenter_y: %f\ncenter_z: %f\n",  nodes[curr_obj]->obj.x,
-									  nodes[curr_obj]->obj.y,
-									  nodes[curr_obj]->obj.z);
-		#endif
+		float x, y, z;
+		fscanf(fp,"center %f %f %f\n", 	&x,
+						&y,
+						&z);
 
 		float transl[16];
-		SetTranslation(nodes[curr_obj]->obj.x, nodes[curr_obj]->obj.y, nodes[curr_obj]->obj.z, transl);
+		SetTranslation(x, y, z, transl);
 		SetIdentityMatrix(nodes[curr_obj]->obj.model_matrix);
 		MultiplyMatrix(transl, nodes[curr_obj]->obj.model_matrix, nodes[curr_obj]->obj.model_matrix);
 	}

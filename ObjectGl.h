@@ -30,11 +30,6 @@ typedef struct {
 	short rotation_dir;
 	float rotation_dur;
 	float rotation_spd;
-
-	//position data for translation
-	float x;
-	float y;
-	float z;
 } object_gl;
 
 

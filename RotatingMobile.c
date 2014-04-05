@@ -16,14 +16,19 @@
 #endif
 
 #define BACKGROUND_COLOR	1.0, 1.0, 1.0, 0.0
-#define FOVY			55.0
-#define ASPECT			 3
+#define FOVY			50.0
+#define ASPECT			 1
 #define NEAR_PLANE	 	 0.5
 #define FAR_PLANE		50.0
-#define CAMERA_DIST		20
-#define CAMERA_ROTATE_ANGLE	 10
+#define CAMERA_DIST		30
+#define CAMERA_ROTATE_ANGLE	1
 #define LEAF_ROTATION_SPD_MAX  	 0.5
 #define LEAF_ROTATION_SPD_MIN  	 0.1
+
+#define BUTTON_UP		'w'
+#define BUTTON_DOWN		's'
+#define BUTTON_LEFT		'a'
+#define BUTTON_RIGHT		'd'
 
 /******************************************************************
 * globals
@@ -67,31 +72,31 @@ void display(){
 * use a given function on every node in a subtree defined by the
 * rootnode {node}
 *******************************************************************/
-void do_for_tree(node_object *node, void (*op)(object_gl *, float), float f) {
-	op(&(node->obj),f);
+void do_for_tree(node_object *node1, node_object *node2, float f, void (*op)(object_gl *, object_gl *, float)) {
+	op(&(node1->obj), &(node2->obj), f);
 
-	if(node->child_l != NULL)
-		do_for_tree(node->child_l, op, f);
+	if(node1->child_l != NULL)
+		do_for_tree(node1->child_l, node2, f, op);
 
-	if(node->child_r != NULL)
-		do_for_tree(node->child_r, op, f);
+	if(node1->child_r != NULL)
+		do_for_tree(node1->child_r, node2, f, op);
 }
 
 void rotate_mobile(node_object *node) {
 	float now = glutGet(GLUT_ELAPSED_TIME);
 	float time_delta = now - node->obj.rotation_dur;
-	node->obj.rotation_dur = now;
-
-	rotate_object(&(node->obj), time_delta * node->obj.rotation_spd * node->obj.rotation_dir);	
+	node->obj.rotation_dur = now;	
 
 	if(node->child_l != NULL){
-		do_for_tree(node->child_l, orbit_object, time_delta * node->obj.rotation_spd * node->obj.rotation_dir);
 		rotate_mobile(node->child_l);
+		do_for_tree(node->child_l, node, time_delta * node->obj.rotation_spd * node->obj.rotation_dir, orbit_object);
 	}
 	if(node->child_r != NULL){
-		do_for_tree(node->child_r, orbit_object, time_delta * node->obj.rotation_spd * node->obj.rotation_dir);
 		rotate_mobile(node->child_r);
+		do_for_tree(node->child_r, node, time_delta * node->obj.rotation_spd * node->obj.rotation_dir, orbit_object);
 	}
+
+	rotate_object(&(node->obj), time_delta * node->obj.rotation_spd * node->obj.rotation_dir);
 }
 
 /******************************************************************
@@ -274,34 +279,34 @@ void mouse_input(int button, int state, int x, int y){
 * handler for keyboard-button pressed
 *******************************************************************/
 void key_input(unsigned char key, int x, int y){
-	float RotationMatrix[16];
-	float TranslteMatrix[16];
+	float rotation[16];
+	float translte[16];
 	
 	printf("KEY  @ x:%d y:%d key:%d\n",x,y,key);		
 
-	if(key != 'w' && key != 'a' && key != 's' && key != 'd')
+	if(key != BUTTON_UP && key != BUTTON_DOWN && key != BUTTON_LEFT && key != BUTTON_RIGHT)
 		return;
 
-	SetTranslation(0.0, 0.0, CAMERA_DIST, TranslteMatrix);
-	MultiplyMatrix(TranslteMatrix, ViewMatrix, ViewMatrix);
+	SetTranslation(0.0, 0.0, CAMERA_DIST, translte);
+	MultiplyMatrix(translte, ViewMatrix, ViewMatrix);
 
 	switch(key) {
-		case 'd': 	SetRotationY(CAMERA_ROTATE_ANGLE, RotationMatrix); 		 
-				MultiplyMatrix(RotationMatrix, ViewMatrix, ViewMatrix); 
-				break;
-		case 'a': 	SetRotationY(360 - CAMERA_ROTATE_ANGLE, RotationMatrix); 
-				MultiplyMatrix(RotationMatrix, ViewMatrix, ViewMatrix); 
-				break;
-		case 'w':	SetRotationX(CAMERA_ROTATE_ANGLE, RotationMatrix); 
-				MultiplyMatrix(RotationMatrix, ViewMatrix, ViewMatrix); 
-				break;
-		case 's':	SetRotationX(360 - CAMERA_ROTATE_ANGLE, RotationMatrix); 
-				MultiplyMatrix(RotationMatrix, ViewMatrix, ViewMatrix); 
-				break;
+		case BUTTON_RIGHT: 	SetRotationY(CAMERA_ROTATE_ANGLE, rotation); 		 
+					MultiplyMatrix(rotation, ViewMatrix, ViewMatrix); 
+					break;
+		case BUTTON_LEFT: 	SetRotationY(360 - CAMERA_ROTATE_ANGLE, rotation); 
+					MultiplyMatrix(rotation, ViewMatrix, ViewMatrix); 
+					break;
+		case BUTTON_UP:		SetRotationX(CAMERA_ROTATE_ANGLE, rotation); 
+					MultiplyMatrix(rotation, ViewMatrix, ViewMatrix); 
+					break;
+		case BUTTON_DOWN:	SetRotationX(360 - CAMERA_ROTATE_ANGLE, rotation); 
+					MultiplyMatrix(rotation, ViewMatrix, ViewMatrix); 
+					break;
 	};
 
-	SetTranslation(0.0, 0.0,CAMERA_DIST * -1, TranslteMatrix);
-	MultiplyMatrix(TranslteMatrix, ViewMatrix, ViewMatrix); 
+	SetTranslation(0.0, 0.0,CAMERA_DIST * -1, translte);
+	MultiplyMatrix(translte, ViewMatrix, ViewMatrix); 
 }
 
 /******************************************************************

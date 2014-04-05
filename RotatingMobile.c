@@ -21,7 +21,7 @@
 #define NEAR_PLANE	 	 0.5
 #define FAR_PLANE		50.0
 #define CAMERA_DIST		30
-#define CAMERA_ROTATE_ANGLE	10
+#define CAMERA_ROTATE_ANGLE	1
 #define LEAF_ROTATION_SPD_MAX  	 0.5
 #define LEAF_ROTATION_SPD_MIN  	 0.1
 
@@ -67,31 +67,31 @@ void display(){
 * use a given function on every node in a subtree defined by the
 * rootnode {node}
 *******************************************************************/
-void do_for_tree(node_object *node, void (*op)(object_gl *, float), float f) {
-	op(&(node->obj),f);
+void do_for_tree(node_object *node1, node_object *node2, float f, void (*op)(object_gl *, object_gl *, float)) {
+	op(&(node1->obj), &(node2->obj), f);
 
-	if(node->child_l != NULL)
-		do_for_tree(node->child_l, op, f);
+	if(node1->child_l != NULL)
+		do_for_tree(node1->child_l, node2, f, op);
 
-	if(node->child_r != NULL)
-		do_for_tree(node->child_r, op, f);
+	if(node1->child_r != NULL)
+		do_for_tree(node1->child_r, node2, f, op);
 }
 
 void rotate_mobile(node_object *node) {
 	float now = glutGet(GLUT_ELAPSED_TIME);
 	float time_delta = now - node->obj.rotation_dur;
-	node->obj.rotation_dur = now;
-
-	rotate_object(&(node->obj), time_delta * node->obj.rotation_spd * node->obj.rotation_dir);	
+	node->obj.rotation_dur = now;	
 
 	if(node->child_l != NULL){
-		do_for_tree(node->child_l, orbit_object, time_delta * node->obj.rotation_spd * node->obj.rotation_dir);
 		rotate_mobile(node->child_l);
+		do_for_tree(node->child_l, node, time_delta * node->obj.rotation_spd * node->obj.rotation_dir, orbit_object);
 	}
 	if(node->child_r != NULL){
-		do_for_tree(node->child_r, orbit_object, time_delta * node->obj.rotation_spd * node->obj.rotation_dir);
 		rotate_mobile(node->child_r);
+		do_for_tree(node->child_r, node, time_delta * node->obj.rotation_spd * node->obj.rotation_dir, orbit_object);
 	}
+
+	rotate_object(&(node->obj), time_delta * node->obj.rotation_spd * node->obj.rotation_dir);
 }
 
 /******************************************************************

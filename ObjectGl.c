@@ -55,11 +55,21 @@ void draw_single(object_gl object, float *ProjMatrix, float *ViewMatrix, GLuint 
 	glDisableVertexAttribArray(vColor);
 }
 
-void orbit_object(object_gl *object, float degree) {
+void orbit_object(object_gl *object, object_gl *center, float degree) {
 	float rotation[16];
+	float translat[16];
+	float x = center->model_matrix[ 3];
+	float y = center->model_matrix[ 7];
+	float z = center->model_matrix[11];
+
+	SetTranslation( -x, -y, -z,translat);
+	MultiplyMatrix(translat, object->model_matrix, object->model_matrix);	
 
 	SetRotationY(degree, rotation);
 	MultiplyMatrix(rotation, object->model_matrix, object->model_matrix);
+
+	SetTranslation( x, y, z,translat);
+	MultiplyMatrix(translat, object->model_matrix, object->model_matrix);	
 }
 
 /******************************************************************
@@ -74,7 +84,7 @@ void rotate_object(object_gl *object, float degree) {
 	float y = object->model_matrix[ 7];
 	float z = object->model_matrix[11];
 
-	SetTranslation(-x,-y,-z,translat);
+	SetTranslation( -x, -y, -z,translat);
 	MultiplyMatrix(translat, object->model_matrix, object->model_matrix);	
 	
 	SetRotationY(degree, rotation);

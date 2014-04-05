@@ -35,7 +35,7 @@ typedef struct {
 
 
 void draw_single(object_gl object, float *ProjMatrix, float *ViewMatrix, GLuint shader);
-void orbit_object (object_gl *object, float degree);
+void orbit_object (object_gl *object, object_gl *center, float degree);
 void rotate_object(object_gl *object, float degree);
 
 #endif

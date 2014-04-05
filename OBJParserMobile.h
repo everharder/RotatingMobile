@@ -1,4 +1,5 @@
 #include "ObjectGl.h"
+#include "Grid.h"
 
 #ifndef __OBJPARSERMOBILE_H__
 #define __OBJPARSERMOBILE_H__
@@ -14,6 +15,7 @@ typedef struct node_object {
 
 
 node_object* parse_mobile(char *filename);
+node_object* parse_grid3D(object_gl objX, object_gl objY, object_gl objZ);
 
 
 #endif

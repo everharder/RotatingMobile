@@ -10,6 +10,7 @@
 #include "OBJParserMobile.h"
 #include "LoadShader.h"  
 #include "Matrix.h"  
+#include "Grid.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -24,9 +25,6 @@
 #define CAMERA_ROTATE_ANGLE	 10
 #define LEAF_ROTATION_SPD_MAX  	 0.5
 #define LEAF_ROTATION_SPD_MIN  	 0.1
-#define NUM_GRIDS		 3
-#define GRID_SIZE		 20.0
-#define VERTICES_PER_GRID	 10
 
 /******************************************************************
 * globals
@@ -39,8 +37,8 @@ float ProjMatrix[16];
 float ViewMatrix[16]; 	
 
 node_object *root;
-node_object grid;			// only used for drawing wall
-node_object *grids[NUM_GRIDS];	
+//node_object grid;			// only used for drawing wall
+node_object *grids;	
 
 /******************************************************************
 * Wall - currently not in use!
@@ -94,10 +92,7 @@ void display(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	draw_mobile(*root);
-	
-	for (int i = 0; i < NUM_GRIDS; i++)
-		draw_single(grids[i]->obj, ProjMatrix, ViewMatrix, ShaderProgram);
-	//draw_single(grid.obj, ProjMatrix, ViewMatrix, ShaderProgram);
+	draw_mobile(*grids);
 
 	/* Swap between front and back buffer */ 
 	glutSwapBuffers();
@@ -230,51 +225,6 @@ void create_shader_program(){
 }
 
 /******************************************************************
-* create grid
-*
-* create grids
-*******************************************************************/
-void create_grid(int num, int vertices){
-	GLfloat dist = GRID_SIZE/vertices;
-
-	// Define vertex on x axis
-	for (int i = 0; i < vertices; i++){
-		// Down
-		grids[num]->obj.vertx_buffer_data[6*i+0] = -GRID_SIZE + i*dist;
-		grids[num]->obj.vertx_buffer_data[6*i+1] = -GRID_SIZE/2;
-		grids[num]->obj.vertx_buffer_data[6*i+2] = -GRID_SIZE/2;
-		// Up
-		grids[num]->obj.vertx_buffer_data[6*i+3] = -GRID_SIZE + i*dist;
-		grids[num]->obj.vertx_buffer_data[6*i+4] = GRID_SIZE-dist;
-		grids[num]->obj.vertx_buffer_data[6*i+5] = -GRID_SIZE/2;
-	}
-	// Define vertex on y axis
-	for (int i = 0; i < vertices; i++){
-		// Left
-		grids[num]->obj.vertx_buffer_data[6*(i+vertices)+0] = -GRID_SIZE;
-		grids[num]->obj.vertx_buffer_data[6*(i+vertices)+1] = -GRID_SIZE/2 + i*dist;
-		grids[num]->obj.vertx_buffer_data[6*(i+vertices)+2] = -GRID_SIZE/2;
-		// Right
-		grids[num]->obj.vertx_buffer_data[6*(i+vertices)+3] = -GRID_SIZE;
-		grids[num]->obj.vertx_buffer_data[6*(i+vertices)+4] = -GRID_SIZE/2 + i*dist;
-		grids[num]->obj.vertx_buffer_data[6*(i+vertices)+5] = -GRID_SIZE/2;
-	}
-	// Define color
-	for (int i = 0; i < grids[num]->obj.num_vertx; i++){
-		grids[num]->obj.color_buffer_data[3*i+0] = 0.0;
-		grids[num]->obj.color_buffer_data[3*i+1] = 0.0;
-		grids[num]->obj.color_buffer_data[3*i+2] = 0.0;
-	}
-	// Define index
-	int j = 0;
-	for (int i = 0; i < grids[num]->obj.num_vertx; i+=2){
-		grids[num]->obj.index_buffer_data[grids[num]->obj.vertx_per_vectr*j+0] = i;
-		grids[num]->obj.index_buffer_data[grids[num]->obj.vertx_per_vectr*j+1] = i+1;
-		j++;
-	}
-}
-
-/******************************************************************
 * setup buffer
 *
 * create buffer objects and load data into buffers
@@ -307,49 +257,6 @@ void init_mobile(node_object *node) {
 }
 
 /******************************************************************
-* init grid
-*******************************************************************/
-void init_grid(int vertices){
-	float RotationMatrix[16];
-
-/*
-	grid.obj.num_vertx = 7;
-	grid.obj.num_vectr = 6;
-	grid.obj.vertx_per_vectr = 3;
-	grid.obj.rotation_spd = 0;
-	grid.obj.rotation_dir = 1;
-	grid.obj.vertx_buffer_data = wall_vertx;
-	grid.obj.color_buffer_data = wall_color;
-	grid.obj.index_buffer_data = wall_index;
-
-	init_mobile(&grid);
-*/
-
-	// Initialize all grids
-	for (int i = 0; i < NUM_GRIDS; i++){
-		grids[i] = calloc(1, sizeof(node_object));
-		grids[i]->obj.num_vertx = 4*vertices;
-		grids[i]->obj.num_vectr = 2*vertices;
-		grids[i]->obj.vertx_per_vectr = 2;
-		grids[i]->obj.rotation_spd = 0;
-		grids[i]->obj.rotation_dir = 1;
-		grids[i]->obj.vertx_buffer_data = malloc(grids[i]->obj.num_vertx * 3 * sizeof(GLfloat));
-		grids[i]->obj.color_buffer_data = malloc(grids[i]->obj.num_vertx * 3 * sizeof(GLfloat));
-		grids[i]->obj.index_buffer_data = malloc(grids[i]->obj.num_vectr * grids[i]->obj.vertx_per_vectr * sizeof(GLushort));
-		SetIdentityMatrix(grids[i]->obj.model_matrix);
-		setup_buffer(grids[i]);
-		create_grid(i, vertices);
-	}
-
-	// Rotate two grids to the right position
-	SetRotationX(270, RotationMatrix);
-	MultiplyMatrix(RotationMatrix, grids[1]->obj.model_matrix, grids[1]->obj.model_matrix);
-
-	SetRotationY(90, RotationMatrix);
-	MultiplyMatrix(RotationMatrix, grids[2]->obj.model_matrix, grids[2]->obj.model_matrix);
-}
-
-/******************************************************************
 * init objects
 * 
 * used to link the object arrays into the main arrays
@@ -361,8 +268,17 @@ void init_objects() {
 		printf("error parsing file...\n");
 		exit(EXIT_FAILURE);
 	}
+	// Grids
+	object_gl *gridXY = create_gridXY(-20.0, -10.0, -10.0, 20.0, 10.0, -10.0, 0.0, 0.0, 0.0, 10);
+	object_gl *gridXZ = create_gridXZ(-20.0, -10.0, -10.0, 20.0, -10.0, 10.0, 0.0, 0.0, 0.0, 10);
+	object_gl *gridYZ = create_gridYZ(-20.0, -10.0, -10.0, -20.0, 10.0, 10.0, 0.0, 0.0, 0.0, 10);
 
-	init_grid(VERTICES_PER_GRID);
+	if(gridXY == NULL || gridXZ == NULL || gridYZ == NULL){
+		printf("error parsing grids...\n");
+		exit(EXIT_FAILURE);
+	}
+
+	grids = parse_grid3D(*gridXY, *gridXZ, *gridYZ);
 }
 
 /******************************************************************
@@ -379,6 +295,7 @@ void initialize(void){
 	init_objects();
 	srand(time(NULL));
 	init_mobile(root);
+	init_mobile(grids);
 
 	/* Setup shaders and shader program */
 	create_shader_program();
@@ -464,9 +381,7 @@ void free_memory(node_object *node){
 *******************************************************************/
 void window_close(){
 	free_memory(root);
-
-	for (int i = 0; i < NUM_GRIDS; i++)
-		free_memory(grids[i]);
+	free_memory(grids);
 }
 
 /******************************************************************

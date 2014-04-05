@@ -21,7 +21,7 @@
 #define NEAR_PLANE	 	 0.5
 #define FAR_PLANE		50.0
 #define CAMERA_DIST		30
-#define CAMERA_ROTATE_ANGLE	10
+#define CAMERA_ROTATE_ANGLE	1
 #define LEAF_ROTATION_SPD_MAX  	 0.5
 #define LEAF_ROTATION_SPD_MIN  	 0.1
 

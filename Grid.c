@@ -7,8 +7,8 @@
 /******************************************************************
 * init_grid
 *******************************************************************/
-void init_grid(object_gl *grid, int vertices){
-	grid = calloc(1, sizeof(object_gl));
+object_gl* init_grid(int vertices){
+	object_gl *grid = calloc(1, sizeof(object_gl));
 	grid->num_vertx = 4*vertices;
 	grid->num_vectr = 2*vertices;
 	grid->vertx_per_vectr = 2;
@@ -18,6 +18,8 @@ void init_grid(object_gl *grid, int vertices){
 	grid->color_buffer_data = malloc(grid->num_vertx * 3 * sizeof(GLfloat));
 	grid->index_buffer_data = malloc(grid->num_vectr * grid->vertx_per_vectr * sizeof(GLushort));
 	SetIdentityMatrix(grid->model_matrix);
+
+	return grid;
 }
 
 /******************************************************************
@@ -31,7 +33,8 @@ object_gl* create_gridXY(float x1, float y1, float z1, float x2, float y2, float
 	float distY = (y2-y1)/vertices;
 	object_gl* grid = NULL;
 
-	init_grid(grid, vertices);
+	// Initialize a new grid
+	grid = init_grid(vertices);
 
 	if (grid == NULL) return NULL;
 
@@ -86,7 +89,8 @@ object_gl* create_gridXZ(float x1, float y1, float z1, float x2, float y2, float
 	float distZ = (z2-z1)/vertices;
 	object_gl* grid = NULL;
 
-	init_grid(grid, vertices);
+	// Initialize a new grid
+	grid = init_grid(vertices);
 
 	if (grid == NULL) return NULL;
 
@@ -140,7 +144,8 @@ object_gl* create_gridYZ(float x1, float y1, float z1, float x2, float y2, float
 	float distZ = (z2-z1)/vertices;
 	object_gl* grid = NULL;
 
-	init_grid(grid, vertices);
+	// Initialize a new grid
+	grid = init_grid(vertices);
 
 	if (grid == NULL) return NULL;
 

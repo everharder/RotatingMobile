@@ -274,7 +274,7 @@ void init_objects() {
 	object_gl *gridYZ = create_gridYZ(-20.0, -10.0, -10.0, -20.0, 10.0, 10.0, 0.0, 0.0, 0.0, 10);
 
 	if(gridXY == NULL || gridXZ == NULL || gridYZ == NULL){
-		printf("error parsing grids...\n");
+		printf("error creating grids...\n");
 		exit(EXIT_FAILURE);
 	}
 

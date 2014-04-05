@@ -10,6 +10,7 @@
 #include "OBJParserMobile.h"
 #include "LoadShader.h"  
 #include "Matrix.h"  
+#include "Grid.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -41,9 +42,44 @@ float ProjMatrix[16];
 float ViewMatrix[16]; 	
 
 node_object *root;
+//node_object grid;			// only used for drawing wall
+node_object *grids;	
 
+/******************************************************************
+* Wall - currently not in use!
+*******************************************************************/
+GLfloat wall_vertx[] = {
+	-20.0, -10.0, -10.0,
+	 20.0, -10.0, -10.0,
+	 20.0,  10.0, -10.0,
+	-20.0,  10.0, -10.0,
+	-20.0, -10.0,  10.0,
+	-20.0,  10.0,  10.0,
+	 20.0, -10.0,  10.0
+};
 
+GLfloat wall_color[] = {
+    1.0, 1.0, 1.0,
+    0.5, 0.5, 0.5,
+    1.0, 1.0, 1.0,
+    0.5, 0.5, 0.5,
+    0.5, 0.5, 0.5,
+    1.0, 1.0, 1.0,
+    1.0, 1.0, 1.0,
+};
 
+GLushort wall_index[] = {
+	0, 1, 2,
+	0, 2, 3,
+	0, 3, 5,
+	0, 4, 5,
+	0, 1, 6,
+	0, 4, 6
+};
+
+/******************************************************************
+* draw mobile
+*******************************************************************/
 void draw_mobile(node_object node){
 	draw_single(node.obj, ProjMatrix, ViewMatrix, ShaderProgram);
 
@@ -61,7 +97,8 @@ void display(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	draw_mobile(*root);
-	
+	draw_mobile(*grids);
+
 	/* Swap between front and back buffer */ 
 	glutSwapBuffers();
 }
@@ -82,6 +119,9 @@ void do_for_tree(node_object *node1, node_object *node2, float f, void (*op)(obj
 		do_for_tree(node1->child_r, node2, f, op);
 }
 
+/******************************************************************
+* rotate mobile
+*******************************************************************/
 void rotate_mobile(node_object *node) {
 	float now = glutGet(GLUT_ELAPSED_TIME);
 	float time_delta = now - node->obj.rotation_dur;
@@ -190,20 +230,6 @@ void create_shader_program(){
 }
 
 /******************************************************************
-* init objects
-* 
-* used to link the object arrays into the main arrays
-*******************************************************************/
-void init_objects() {
-	root = parse_mobile("mobile.obj");
-
-	if(root == NULL) {
-		printf("error parsing file...\n");
-		exit(EXIT_FAILURE);
-	}
-}
-
-/******************************************************************
 * setup buffer
 *
 * create buffer objects and load data into buffers
@@ -236,6 +262,31 @@ void init_mobile(node_object *node) {
 }
 
 /******************************************************************
+* init objects
+* 
+* used to link the object arrays into the main arrays
+*******************************************************************/
+void init_objects() {
+	root = parse_mobile("mobile.obj");
+
+	if(root == NULL) {
+		printf("error parsing file...\n");
+		exit(EXIT_FAILURE);
+	}
+	// Grids
+	object_gl *gridXY = create_gridXY(-20.0, -10.0, -10.0, 20.0, 10.0, -10.0, 0.0, 0.0, 0.0, 10);
+	object_gl *gridXZ = create_gridXZ(-20.0, -10.0, -10.0, 20.0, -10.0, 10.0, 0.0, 0.0, 0.0, 10);
+	object_gl *gridYZ = create_gridYZ(-20.0, -10.0, -10.0, -20.0, 10.0, 10.0, 0.0, 0.0, 0.0, 10);
+
+	if(gridXY == NULL || gridXZ == NULL || gridYZ == NULL){
+		printf("error parsing grids...\n");
+		exit(EXIT_FAILURE);
+	}
+
+	grids = parse_grid3D(*gridXY, *gridXZ, *gridYZ);
+}
+
+/******************************************************************
 * initialize
 *******************************************************************/
 void initialize(void){   
@@ -249,6 +300,7 @@ void initialize(void){
 	init_objects();
 	srand(time(NULL));
 	init_mobile(root);
+	init_mobile(grids);
 
 	/* Setup shaders and shader program */
 	create_shader_program();
@@ -334,6 +386,7 @@ void free_memory(node_object *node){
 *******************************************************************/
 void window_close(){
 	free_memory(root);
+	free_memory(grids);
 }
 
 /******************************************************************

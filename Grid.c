@@ -1,6 +1,5 @@
 #include "Grid.h"
 #include "Matrix.h"
-#include "ObjectGl.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -17,7 +16,7 @@ void init_grid(object_gl *grid, int vertices){
 	grid->rotation_dir = 1;
 	grid->vertx_buffer_data = malloc(grid->num_vertx * 3 * sizeof(GLfloat));
 	grid->color_buffer_data = malloc(grid->num_vertx * 3 * sizeof(GLfloat));
-	grid->index_buffer_data = malloc(grid->num_vectr * grids->vertx_per_vectr * sizeof(GLushort));
+	grid->index_buffer_data = malloc(grid->num_vectr * grid->vertx_per_vectr * sizeof(GLushort));
 	SetIdentityMatrix(grid->model_matrix);
 }
 

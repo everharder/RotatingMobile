@@ -117,22 +117,3 @@ node_object* parse_mobile(char *filename) {
 	free(nodes);
 	return root;
 }
-
-/******************************************************************
-* parse_grid3D
-*
-* parses 3 grids to one 3D object
-*******************************************************************/
-node_object* parse_grid3D(object_gl objX, object_gl objY, object_gl objZ){
-	node_object *grids;
-
-	grids = calloc(1, sizeof(node_object));
-	grids->child_r = calloc(1, sizeof(node_object));
-	grids->child_l = calloc(1, sizeof(node_object));
-
-	grids->obj = objX;
-	grids->child_l->obj = objY;
-	grids->child_r->obj = objZ;
-
-	return grids;
-}

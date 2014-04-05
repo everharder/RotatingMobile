@@ -14,7 +14,6 @@ typedef struct node_object {
 
 
 node_object* parse_mobile(char *filename);
-node_object* parse_grid3D(object_gl objX, object_gl objY, object_gl objZ);
 
 
 #endif

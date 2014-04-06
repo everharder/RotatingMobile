@@ -4,48 +4,66 @@
 #include <stdlib.h>
 
 /******************************************************************
-* DrawSingle
+* Init Object
 *
-* draws single object 
+* binds buffers to object
 *******************************************************************/
-void draw_single(object_gl object, float *ProjMatrix, float *ViewMatrix, GLuint shader) {
+void init_object(object_gl *object) {
+	glGenBuffers(1, &(object->vbo));
+	glGenBuffers(1, &(object->cbo));
+	glGenBuffers(1, &(object->ibo));
+
+	glBindBuffer(GL_ARRAY_BUFFER, object->vbo);
+	glBufferData(GL_ARRAY_BUFFER, object->num_vertx * 3 * sizeof(GLfloat), object->vertx_buffer_data, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, object->ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, object->num_vectr * object->vertx_per_vectr * sizeof(GLushort), object->index_buffer_data, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER, object->cbo);
+	glBufferData(GL_ARRAY_BUFFER, object->num_vertx * 3 * sizeof(GLfloat), object->color_buffer_data, GL_STATIC_DRAW);
+}
+
+/******************************************************************
+* DrawSingle
+*******************************************************************/
+void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLuint shader_program) {
 	glEnableVertexAttribArray(vPosition);
-	glBindBuffer(GL_ARRAY_BUFFER, object.vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, object->vbo);
 	glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);;
 
 	glEnableVertexAttribArray(vColor);
-	glBindBuffer(GL_ARRAY_BUFFER, object.cbo);
+	glBindBuffer(GL_ARRAY_BUFFER, object->cbo);
 	glVertexAttribPointer(vColor, 3, GL_FLOAT,GL_FALSE, 0, 0);
 
 	GLint size; 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, object.ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, object->ibo);
 	glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
 
-	/* Associate program with shader matrices */
-	GLint projectionUniform = glGetUniformLocation(shader, "ProjectionMatrix");
+	/* Associate program with shader_program matrices */
+	GLint projectionUniform = glGetUniformLocation(shader_program, "ProjectionMatrix");
 	if (projectionUniform == -1) {
 		fprintf(stderr, "Could not bind uniform ProjectionMatrix\n");
 		exit(-1);
 	}
-	glUniformMatrix4fv(projectionUniform, 1, GL_TRUE, ProjMatrix);
+	glUniformMatrix4fv(projectionUniform, 1, GL_TRUE, proj_matrix);
 
-	GLint ViewUniform = glGetUniformLocation(shader, "ViewMatrix");
+	GLint ViewUniform = glGetUniformLocation(shader_program, "ViewMatrix");
 
 	if (ViewUniform == -1) {
-		fprintf(stderr, "Could not bind uniform ViewMatrix\n");
+		fprintf(stderr, "Could not bind uniform view_matrix\n");
 		exit(-1);
 	}
-	glUniformMatrix4fv(ViewUniform, 1, GL_TRUE, ViewMatrix);
+	glUniformMatrix4fv(ViewUniform, 1, GL_TRUE, view_matrix);
 
-	GLint RotationUniform = glGetUniformLocation(shader, "ModelMatrix");
+	GLint RotationUniform = glGetUniformLocation(shader_program, "ModelMatrix");
 	if (RotationUniform == -1) {
 		fprintf(stderr, "Could not bind uniform ModelMatrix\n");
 		exit(-1);
 	}
-	glUniformMatrix4fv(RotationUniform, 1, GL_TRUE, object.model_matrix);  
+	glUniformMatrix4fv(RotationUniform, 1, GL_TRUE, object->model_matrix);  
 
 	/* Issue draw command, using indexed triangle list */
-	if(object.vertx_per_vectr == 2)
+	if(object->vertx_per_vectr == 2)
 		glDrawElements(GL_LINES, size/sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
 	else
 		glDrawElements(GL_TRIANGLES, size/sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
@@ -55,6 +73,21 @@ void draw_single(object_gl object, float *ProjMatrix, float *ViewMatrix, GLuint 
 	glDisableVertexAttribArray(vColor);
 }
 
+/******************************************************************
+* Draw N
+*
+* draws n objects
+*******************************************************************/
+void draw_n(object_gl **objects, int n, float *proj_matrix, float *view_matrix, GLuint shader_program){
+	for(int i=0; i < n; i++)
+		draw_single(objects[i], proj_matrix, view_matrix, shader_program);
+}
+
+/******************************************************************
+* Orbit Objects
+*
+* let object rotate around center
+*******************************************************************/
 void orbit_object(object_gl *object, object_gl *center, float degree) {
 	float rotation[16];
 	float translat[16];

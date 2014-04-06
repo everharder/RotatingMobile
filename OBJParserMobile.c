@@ -5,6 +5,12 @@
 
 #define _DEBUG__DEBUG_OBJPARSER_
 
+/******************************************************************
+* Parse Mobile
+*
+* parses mobile from obj-file, for format description 
+* see MOBILE_OBJ_FORMAT.txt
+*******************************************************************/
 node_object* parse_mobile(char *filename) {
 	node_object **nodes = NULL;
 	node_object *root = NULL;

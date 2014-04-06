@@ -1,3 +1,18 @@
+/******************************************************************
+* PROGRAMMING EXERCISE 1 - Rotating Mobile
+* authors: 	Daniel Eberharter
+*	  	Stefan Haselwanter
+* date: 	07.04.2014   
+* version:	1.0
+* desc.:	draws and animates a simple rotating mobile
+		with the controls w, a, s, d the camera can be
+		moved and the rotation direction of the top 
+		wielding can be inverted by leftclick
+
+		the code may contain fragments of the programming
+		example no. 2 from Matthias Harders.
+*******************************************************************/
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -16,15 +31,16 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-#define BACKGROUND_COLOR	1.0, 1.0, 1.0, 0.0
+#define BACKGROUND_COLOR_R	 1.0
+#define BACKGROUND_COLOR_G	 0.9
+#define BACKGROUND_COLOR_B	 0.9
 #define FOVY			50.0
-#define ASPECT			 1
 #define NEAR_PLANE	 	 0.5
-#define FAR_PLANE		50.0
+#define FAR_PLANE		70.0
+#define ASPECT			 1
 #define CAMERA_DIST		30
-#define CAMERA_ROTATE_ANGLE	1
-#define LEAF_ROTATION_SPD_MAX  	 0.5
-#define LEAF_ROTATION_SPD_MIN  	 0.1
+#define CAMERA_ROTATE_ANGLE	 1
+#define NUM_GRIDS		 3
 
 #define BUTTON_UP		'w'
 #define BUTTON_DOWN		's'
@@ -34,54 +50,22 @@
 /******************************************************************
 * globals
 *******************************************************************/
-GLuint ShaderProgram;
+GLuint shader_program;
 static const char* VertexShaderString;
 static const char* FragmentShaderString;		
 
-float ProjMatrix[16]; 	
-float ViewMatrix[16]; 	
+float proj_matrix[16]; 	
+float view_matrix[16]; 	
 
 node_object *root;
-//node_object grid;			// only used for drawing wall
-node_object *grids;	
+object_gl *grids[NUM_GRIDS];	
 
-/******************************************************************
-* Wall - currently not in use!
-*******************************************************************/
-GLfloat wall_vertx[] = {
-	-20.0, -10.0, -10.0,
-	 20.0, -10.0, -10.0,
-	 20.0,  10.0, -10.0,
-	-20.0,  10.0, -10.0,
-	-20.0, -10.0,  10.0,
-	-20.0,  10.0,  10.0,
-	 20.0, -10.0,  10.0
-};
-
-GLfloat wall_color[] = {
-    1.0, 1.0, 1.0,
-    0.5, 0.5, 0.5,
-    1.0, 1.0, 1.0,
-    0.5, 0.5, 0.5,
-    0.5, 0.5, 0.5,
-    1.0, 1.0, 1.0,
-    1.0, 1.0, 1.0,
-};
-
-GLushort wall_index[] = {
-	0, 1, 2,
-	0, 2, 3,
-	0, 3, 5,
-	0, 4, 5,
-	0, 1, 6,
-	0, 4, 6
-};
 
 /******************************************************************
 * draw mobile
 *******************************************************************/
 void draw_mobile(node_object node){
-	draw_single(node.obj, ProjMatrix, ViewMatrix, ShaderProgram);
+	draw_single(&(node.obj), proj_matrix, view_matrix, shader_program);
 
 	if(node.child_l != NULL)
 		draw_mobile(*(node.child_l));
@@ -94,29 +78,30 @@ void draw_mobile(node_object node){
 * display
 *******************************************************************/
 void display(){
+	//clear screen
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	//draw grid
+	draw_n(grids, NUM_GRIDS, proj_matrix, view_matrix, shader_program);
+
+	//draw actual objects
 	draw_mobile(*root);
-	draw_mobile(*grids);
 
 	/* Swap between front and back buffer */ 
 	glutSwapBuffers();
 }
 
 /******************************************************************
-* do for tree
-*
-* use a given function on every node in a subtree defined by the
-* rootnode {node}
+* orbit_subtree
 *******************************************************************/
-void do_for_tree(node_object *node1, node_object *node2, float f, void (*op)(object_gl *, object_gl *, float)) {
-	op(&(node1->obj), &(node2->obj), f);
+void orbit_subtree(node_object *orbit, node_object *center, float degree) {
+	orbit_object(&(orbit->obj), &(center->obj), degree);
 
-	if(node1->child_l != NULL)
-		do_for_tree(node1->child_l, node2, f, op);
+	if(orbit->child_l != NULL)
+		orbit_subtree(orbit->child_l, center, degree);
 
-	if(node1->child_r != NULL)
-		do_for_tree(node1->child_r, node2, f, op);
+	if(orbit->child_r != NULL)
+		orbit_subtree(orbit->child_r, center, degree);
 }
 
 /******************************************************************
@@ -129,11 +114,11 @@ void rotate_mobile(node_object *node) {
 
 	if(node->child_l != NULL){
 		rotate_mobile(node->child_l);
-		do_for_tree(node->child_l, node, time_delta * node->obj.rotation_spd * node->obj.rotation_dir, orbit_object);
+		orbit_subtree(node->child_l, node, time_delta * node->obj.rotation_spd * node->obj.rotation_dir);
 	}
 	if(node->child_r != NULL){
 		rotate_mobile(node->child_r);
-		do_for_tree(node->child_r, node, time_delta * node->obj.rotation_spd * node->obj.rotation_dir, orbit_object);
+		orbit_subtree(node->child_r, node, time_delta * node->obj.rotation_spd * node->obj.rotation_dir);
 	}
 
 	rotate_object(&(node->obj), time_delta * node->obj.rotation_spd * node->obj.rotation_dir);
@@ -144,15 +129,13 @@ void rotate_mobile(node_object *node) {
 *******************************************************************/
 void on_idle(){
 	rotate_mobile(root);
-
-	/* Request redrawing forof window content */  
 	glutPostRedisplay();
 }
 
 /******************************************************************
 * add shader
 *******************************************************************/
-void add_shader(GLuint ShaderProgram, const char* ShaderCode, GLenum ShaderType){
+void add_shader(GLuint shader_program, const char* ShaderCode, GLenum ShaderType){
 	GLuint ShaderObj = glCreateShader(ShaderType);
 
 	if (ShaderObj == 0) {
@@ -177,7 +160,7 @@ void add_shader(GLuint ShaderProgram, const char* ShaderCode, GLenum ShaderType)
 	}
 
 	/* Associate shader with shader program */
-	glAttachShader(ShaderProgram, ShaderObj);
+	glAttachShader(shader_program, ShaderObj);
 }
 
 
@@ -186,9 +169,9 @@ void add_shader(GLuint ShaderProgram, const char* ShaderCode, GLenum ShaderType)
 *******************************************************************/
 void create_shader_program(){
 	/* Allocate shader object */
-	ShaderProgram = glCreateProgram();
+	shader_program = glCreateProgram();
 
-	if (ShaderProgram == 0) {
+	if (shader_program == 0) {
 		fprintf(stderr, "Error creating shader program\n");
 		exit(1);
 	}
@@ -198,73 +181,51 @@ void create_shader_program(){
 	FragmentShaderString = LoadShader("fragmentshader.fs");
 
 	/* Separately add vertex and fragment shader to program */
-	add_shader(ShaderProgram, VertexShaderString, GL_VERTEX_SHADER);
-	add_shader(ShaderProgram, FragmentShaderString, GL_FRAGMENT_SHADER);
+	add_shader(shader_program, VertexShaderString, GL_VERTEX_SHADER);
+	add_shader(shader_program, FragmentShaderString, GL_FRAGMENT_SHADER);
 
 	/* Link shader code into executable shader program */
-	glLinkProgram(ShaderProgram);
+	glLinkProgram(shader_program);
 
 	/* Check results of linking step */
 	GLint Success = 0;
 	GLchar ErrorLog[1024];
-	glGetProgramiv(ShaderProgram, GL_LINK_STATUS, &Success);
+	glGetProgramiv(shader_program, GL_LINK_STATUS, &Success);
 
 	if (Success == 0) {
-		glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
+		glGetProgramInfoLog(shader_program, sizeof(ErrorLog), NULL, ErrorLog);
 		fprintf(stderr, "Error linking shader program: '%s'\n", ErrorLog);
 		exit(1);
 	}
 
 	/* Check if shader program can be executed */ 
-	glValidateProgram(ShaderProgram);
-	glGetProgramiv(ShaderProgram, GL_VALIDATE_STATUS, &Success);
+	glValidateProgram(shader_program);
+	glGetProgramiv(shader_program, GL_VALIDATE_STATUS, &Success);
 
 	if (!Success) {
-		glGetProgramInfoLog(ShaderProgram, sizeof(ErrorLog), NULL, ErrorLog);
+		glGetProgramInfoLog(shader_program, sizeof(ErrorLog), NULL, ErrorLog);
 		fprintf(stderr, "Invalid shader program: '%s'\n", ErrorLog);
 		exit(1);
 	}
 
 	/* Put linked shader program into drawing pipeline */
-	glUseProgram(ShaderProgram);
-}
-
-/******************************************************************
-* setup buffer
-*
-* create buffer objects and load data into buffers
-*******************************************************************/
-void setup_buffer(node_object *node) {
-	glGenBuffers(1, &(node->obj.vbo));
-	glGenBuffers(1, &(node->obj.cbo));
-	glGenBuffers(1, &(node->obj.ibo));
-
-	glBindBuffer(GL_ARRAY_BUFFER, node->obj.vbo);
-	glBufferData(GL_ARRAY_BUFFER, node->obj.num_vertx * 3 * sizeof(GLfloat), node->obj.vertx_buffer_data, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, node->obj.ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, node->obj.num_vectr * node->obj.vertx_per_vectr * sizeof(GLushort), node->obj.index_buffer_data, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ARRAY_BUFFER, node->obj.cbo);
-	glBufferData(GL_ARRAY_BUFFER, node->obj.num_vertx * 3 * sizeof(GLfloat), node->obj.color_buffer_data, GL_STATIC_DRAW);
+	glUseProgram(shader_program);
 }
 
 /******************************************************************
 * init mobile
 *******************************************************************/
-void init_mobile(node_object *node) {
-	setup_buffer(node);
+void init_object_mobile(node_object *node) {
+	init_object(&(node->obj));
 
 	if(node->child_l != NULL)
-		init_mobile(node->child_l);
+		init_object_mobile(node->child_l);
 	if(node->child_r != NULL)
-		init_mobile(node->child_r);
+		init_object_mobile(node->child_r);
 }
 
 /******************************************************************
 * init objects
-* 
-* used to link the object arrays into the main arrays
 *******************************************************************/
 void init_objects() {
 	root = parse_mobile("mobile.obj");
@@ -273,24 +234,23 @@ void init_objects() {
 		printf("error parsing file...\n");
 		exit(EXIT_FAILURE);
 	}
-	// Grids
-	object_gl *gridXY = create_gridXY(-20.0, -10.0, -10.0, 20.0, 10.0, -10.0, 0.0, 0.0, 0.0, 10);
-	object_gl *gridXZ = create_gridXZ(-20.0, -10.0, -10.0, 20.0, -10.0, 10.0, 0.0, 0.0, 0.0, 10);
-	object_gl *gridYZ = create_gridYZ(-20.0, -10.0, -10.0, -20.0, 10.0, 10.0, 0.0, 0.0, 0.0, 10);
 
-	if(gridXY == NULL || gridXZ == NULL || gridYZ == NULL){
+	// Grids
+	grids[0] = create_gridXY(-20.0, -10.0, -10.0, 20.0, 10.0, -10.0, 0.0, 0.0, 0.0, 20);
+	grids[1] = create_gridXZ(-20.0, -10.0, -10.0, 20.0, -10.0, 10.0, 0.0, 0.0, 0.0, 20);
+	grids[2] = create_gridYZ(-20.0, -10.0, -10.0, -20.0, 10.0, 10.0, 0.0, 0.0, 0.0, 20);
+
+	if(grids[0] == NULL || grids[1] == NULL || grids[2] == NULL){
 		printf("error creating grids...\n");
 		exit(EXIT_FAILURE);
 	}
-
-	grids = parse_grid3D(*gridXY, *gridXZ, *gridYZ);
 }
 
 /******************************************************************
 * initialize
 *******************************************************************/
 void initialize(void){   
-	glClearColor(BACKGROUND_COLOR);
+	glClearColor(BACKGROUND_COLOR_R, BACKGROUND_COLOR_G, BACKGROUND_COLOR_B, 0.0);
 
 	/* Enable depth testing */
 	glEnable(GL_DEPTH_TEST);
@@ -299,17 +259,19 @@ void initialize(void){
 	/* Setup vertex, color, and index buffer objects */
 	init_objects();
 	srand(time(NULL));
-	init_mobile(root);
-	init_mobile(grids);
+	init_object_mobile(root);
+
+	for(int i=0; i < NUM_GRIDS; i++) 
+		init_object(grids[i]);
 
 	/* Setup shaders and shader program */
 	create_shader_program();
 
 	/* Set projection transform */
-	SetPerspectiveMatrix(FOVY, ASPECT, NEAR_PLANE, FAR_PLANE, ProjMatrix);
+	SetPerspectiveMatrix(FOVY, ASPECT, NEAR_PLANE, FAR_PLANE, proj_matrix);
 
 	/* Set viewing transform */
-	SetTranslation(0.0, 0.0, -1 * CAMERA_DIST, ViewMatrix);
+	SetTranslation(0.0, 0.0, -1 * CAMERA_DIST, view_matrix);
 }
 
 /******************************************************************
@@ -340,25 +302,25 @@ void key_input(unsigned char key, int x, int y){
 		return;
 
 	SetTranslation(0.0, 0.0, CAMERA_DIST, translte);
-	MultiplyMatrix(translte, ViewMatrix, ViewMatrix);
+	MultiplyMatrix(translte, view_matrix, view_matrix);
 
 	switch(key) {
 		case BUTTON_RIGHT: 	SetRotationY(CAMERA_ROTATE_ANGLE, rotation); 		 
-					MultiplyMatrix(rotation, ViewMatrix, ViewMatrix); 
+					MultiplyMatrix(rotation, view_matrix, view_matrix); 
 					break;
 		case BUTTON_LEFT: 	SetRotationY(360 - CAMERA_ROTATE_ANGLE, rotation); 
-					MultiplyMatrix(rotation, ViewMatrix, ViewMatrix); 
+					MultiplyMatrix(rotation, view_matrix, view_matrix); 
 					break;
 		case BUTTON_UP:		SetRotationX(CAMERA_ROTATE_ANGLE, rotation); 
-					MultiplyMatrix(rotation, ViewMatrix, ViewMatrix); 
+					MultiplyMatrix(rotation, view_matrix, view_matrix); 
 					break;
 		case BUTTON_DOWN:	SetRotationX(360 - CAMERA_ROTATE_ANGLE, rotation); 
-					MultiplyMatrix(rotation, ViewMatrix, ViewMatrix); 
+					MultiplyMatrix(rotation, view_matrix, view_matrix); 
 					break;
 	};
 
 	SetTranslation(0.0, 0.0,CAMERA_DIST * -1, translte);
-	MultiplyMatrix(translte, ViewMatrix, ViewMatrix); 
+	MultiplyMatrix(translte, view_matrix, view_matrix); 
 }
 
 /******************************************************************
@@ -380,13 +342,16 @@ void free_memory(node_object *node){
 }
 
 /******************************************************************
-* window_close
+* window close
 *
 * ON_WINDOW_CLOSE handler
 *******************************************************************/
 void window_close(){
+	for(int i=0; i < NUM_GRIDS; i++) {
+		free(grids[i]);
+	}
+
 	free_memory(root);
-	free_memory(grids);
 }
 
 /******************************************************************

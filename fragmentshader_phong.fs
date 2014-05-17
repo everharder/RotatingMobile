@@ -2,8 +2,9 @@
 
 in vec3 normalDirection;
 in vec3 viewPosition;
+in vec4 vertexPosition;
 
-smooth out vec4 interpColor;
+out vec4 outColor;
 
 // fixed point light properties
 vec3 light_position_world  = vec3 (10.0, 10.0, 10.0);
@@ -19,9 +20,15 @@ float specular_exponent = 100.0; // specular 'power'
 
 void main()
 {
+	vec3 lightDirection;
+	vec3 reflectDirection;
+	float cosAngIncidence;
+	float phongTerm;
+	vec4 interpColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+
 	interpColor = interpColor + vec4(La * Ka, 1.0);
 
-	vec3 lightDirection = normalize(light_position_world - vec3(vertexPosition));
+	lightDirection = normalize(light_position_world - vec3(vertexPosition));
 	vec3 viewDirection = normalize(viewPosition);
 	cosAngIncidence = dot(normalize(normalDirection), lightDirection);
 	cosAngIncidence = clamp(cosAngIncidence, 0, 1);
@@ -38,4 +45,6 @@ void main()
 	phongTerm = pow(phongTerm, specular_exponent);
 
 	interpColor = interpColor + vec4(Ls * Ks * phongTerm, 1.0);
+
+	outColor = interpColor;
 }

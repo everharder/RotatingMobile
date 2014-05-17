@@ -24,6 +24,7 @@ layout (location = 1) in vec3 Normal;
 
 out vec3 normalDirection;
 out vec3 viewPosition;
+out vec4 vertexPosition;
 
 void main()
 {

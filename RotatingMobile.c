@@ -48,7 +48,7 @@
 #define BUTTON_RIGHT		'd'
 
 #define VERTX_SHADER		"vertexshader_phong.vs"
-#define FRAGM_SHADER		"fragmentshader_phong.vs"
+#define FRAGM_SHADER		"fragmentshader_phong.fs"
 
 
 //Lighting
@@ -287,8 +287,6 @@ void initialize(void){
 	GLfloat light_ambient[] = { 1.0, 1.0, 1.0, 1.0 };
 	GLfloat light_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
 	GLfloat light_position[] = { 15.0, 15.0, 15.0, 0.0 };
-
-	glShadeModel(GL_SMOOTH); //gourard shading
 
 	// Assign created components to GL_LIGHT0
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);

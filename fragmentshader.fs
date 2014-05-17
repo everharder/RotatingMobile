@@ -1,7 +1,6 @@
 #version 330
 
-in vec4 vertex_eye;
-in vec3 position_eye, normal_eye;
+in vec4 vertex_eye, position_eye, normal_eye;
 
 uniform mat4 ViewMatrix;
 
@@ -23,19 +22,20 @@ void main () {
   // ambient intensity
   vec3 Ia = La * Ka;
 
+  vec3 direction_to_light = normalize (vec3(vec4(light_position_world, 1.0) - vertex_eye));
+  vec3 direction_to_normal = normalize(vec3(normal_eye));
+  vec3 direction_position_eye = normalize (vec3(position_eye));
+
   // diffuse intensity
   // raise light position to eye space
   //vec3 light_position_eye = vec3 (ViewMatrix * vec4 (light_position_world, 1.0));
-  vec3 direction_to_light_eye = normalize (light_position_world - vec3(vertex_eye));
-  vec3 direction_to_normal = normalize(normal_eye);
-  float dot_prod = dot (direction_to_light_eye, direction_to_normal);
+  float dot_prod = dot (direction_to_light, direction_to_normal);
   dot_prod = max (dot_prod, 0.0);
   vec3 Id = Ld * Kd * dot_prod; // final diffuse intensity
   
   // specular intensity
-  vec3 direction_reflection = reflect (-direction_to_light_eye, direction_to_normal);
+  vec3 direction_reflection = reflect (-direction_to_light, direction_to_normal);
   //vec3 surface_to_viewer_eye = normalize (-position_eye);
-  vec3 direction_position_eye = normalize (position_eye);
   float dot_prod_specular = dot (direction_reflection, direction_position_eye);
   dot_prod_specular = max (dot_prod_specular, 0.0);
   float specular_factor = pow (dot_prod_specular, specular_exponent);

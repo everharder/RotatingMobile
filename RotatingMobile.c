@@ -277,23 +277,23 @@ void initialize(void){
 	SetTranslation(0.0, 0.0, -1 * CAMERA_DIST, view_matrix);
 
 	/* Init Lighting */
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
 
 	// Create light components
-	GLfloat ambientLight[] = { 0.2f, 0.2f, 0.2f, 1.0f };
-	GLfloat diffuseLight[] = { 0.8f, 0.8f, 0.8, 1.0f };
-	GLfloat specularLight[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-	GLfloat position[] = { 20.0f, 20.0f, 0.0f, 1.0f };
-
-	// Assign created components to GL_LIGHT0
-	glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
-	glLightfv(GL_LIGHT0, GL_POSITION, position);
-
+	GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+        GLfloat mat_shininess[] = { 50.0 };
+	GLfloat light_position[] = { 5.0, 20.0, 0.0, 0.0 };
+	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glShadeModel(GL_SMOOTH); //gourard shading
 
+	// Assign created components to GL_LIGHT0
+	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+	glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+   	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+	
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_DEPTH_TEST);
 }
 
 /******************************************************************

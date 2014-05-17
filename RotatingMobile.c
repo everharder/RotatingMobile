@@ -282,7 +282,7 @@ void initialize(void){
 	GLfloat light_specular[] = { 1.0, 1.0, 1.0, 1.0 };
 	GLfloat light_ambient[] = { 1.0, 1.0, 1.0, 1.0 };
 	GLfloat light_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
-	GLfloat light_position[] = { 1.0, 1.0, 0.0, 0.0 };
+	GLfloat light_position[] = { 15.0, 15.0, 15.0, 0.0 };
 
 	glShadeModel(GL_SMOOTH); //gourard shading
 

@@ -11,6 +11,7 @@
 
 
 float dotProduct(GLfloat *v1, GLfloat *v2);
+float normVectr(GLfloat *v1, GLfloat *v2);
 void crossProduct(GLfloat *v1, GLfloat *v2, GLfloat* result);
 void sumVectr(GLfloat *v1, GLfloat *v2, GLfloat* result);
 void diffVectr(GLfloat *v1, GLfloat *v2, GLfloat* result);

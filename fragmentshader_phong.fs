@@ -3,6 +3,8 @@
 in vec3 normalDirection;
 in vec4 vertexPosition;
 
+uniform mat4 ViewMatrix;
+
 out vec4 outColor;
 
 // fixed point light properties

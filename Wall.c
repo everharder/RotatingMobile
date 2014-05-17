@@ -56,11 +56,16 @@ object_gl* create_wallXY(float x1, float y1, float z1, float x2, float y2, float
 	grid->vertx_buffer_data[10] = y1;
 	grid->vertx_buffer_data[11] = z1;
 
-	// Define color
+	// Define color and normals
+	grid->normals = malloc(grid->vertx_per_vectr * grid->num_vertx * sizeof(GLfloat));
 	for (int i = 0; i < grid->num_vertx; i++){
 		grid->color_buffer_data[3*i+0] = colorR;
 		grid->color_buffer_data[3*i+1] = colorG;
 		grid->color_buffer_data[3*i+2] = colorB;
+
+		grid->normals[i*3 + 0] = 0.0;
+		grid->normals[i*3 + 1] = 0.0;
+		grid->normals[i*3 + 2] = 1.0;
 	}
 
 	// Define index
@@ -71,8 +76,6 @@ object_gl* create_wallXY(float x1, float y1, float z1, float x2, float y2, float
 	grid->index_buffer_data[3] = 1;
 	grid->index_buffer_data[4] = 2;
 	grid->index_buffer_data[5] = 3;
-
-	findNormals(grid);
 
 	return grid;
 }
@@ -109,11 +112,16 @@ object_gl* create_wallXZ(float x1, float y1, float z1, float x2, float y2, float
 	grid->vertx_buffer_data[10] = y1;
 	grid->vertx_buffer_data[11] = z2;
 
-	// Define color
+	// Define color and normals
+	grid->normals = malloc(grid->vertx_per_vectr * grid->num_vertx * sizeof(GLfloat));
 	for (int i = 0; i < grid->num_vertx; i++){
 		grid->color_buffer_data[3*i+0] = colorR;
 		grid->color_buffer_data[3*i+1] = colorG;
 		grid->color_buffer_data[3*i+2] = colorB;
+
+		grid->normals[i*3 + 0] = 0.0;
+		grid->normals[i*3 + 1] = 1.0;
+		grid->normals[i*3 + 2] = 0.0;
 	}
 
 	// Define index
@@ -124,8 +132,6 @@ object_gl* create_wallXZ(float x1, float y1, float z1, float x2, float y2, float
 	grid->index_buffer_data[3] = 1;
 	grid->index_buffer_data[4] = 2;
 	grid->index_buffer_data[5] = 3;
-
-	findNormals(grid);
 
 	return grid;
 }
@@ -162,11 +168,16 @@ object_gl* create_wallYZ(float x1, float y1, float z1, float x2, float y2, float
 	grid->vertx_buffer_data[10] = y2;
 	grid->vertx_buffer_data[11] = z1;
 
-	// Define color
+	// Define color and normals
+	grid->normals = malloc(grid->vertx_per_vectr * grid->num_vertx * sizeof(GLfloat));
 	for (int i = 0; i < grid->num_vertx; i++){
 		grid->color_buffer_data[3*i+0] = colorR;
 		grid->color_buffer_data[3*i+1] = colorG;
 		grid->color_buffer_data[3*i+2] = colorB;
+
+		grid->normals[i*3 + 0] = 1.0;
+		grid->normals[i*3 + 1] = 0.0;
+		grid->normals[i*3 + 2] = 0.0;
 	}
 
 	// Define index
@@ -177,8 +188,6 @@ object_gl* create_wallYZ(float x1, float y1, float z1, float x2, float y2, float
 	grid->index_buffer_data[3] = 1;
 	grid->index_buffer_data[4] = 2;
 	grid->index_buffer_data[5] = 3;
-
-	findNormals(grid);
 
 	return grid;
 }

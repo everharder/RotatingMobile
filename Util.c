@@ -10,6 +10,15 @@ float dotProduct(GLfloat *v1, GLfloat *v2){
 }
 
 /******************************************************************
+* normVectr
+*
+* determines the norm (length) of two 3D vectors.
+*******************************************************************/
+float normVectr(GLfloat *v1, GLfloat *v2){
+	return sqrt(v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2]);
+}
+
+/******************************************************************
 * crossProduct
 *
 * determines the cross product of two 3D vectors.
@@ -46,10 +55,10 @@ void sumVectr(GLfloat *v1, GLfloat *v2, GLfloat *result){
 *******************************************************************/
 void diffVectr(GLfloat *v1, GLfloat *v2, GLfloat *result){
 	GLfloat temp[3] = {
-		v1[0] - v2[0],
-		v1[1] - v2[1],
-		v1[2] - v2[2]
-	};
+			v1[0] - v2[0],
+			v1[1] - v2[1],
+			v1[2] - v2[2]
+			};
 
 	memcpy(result, temp, 3*sizeof(GLfloat));
 }
@@ -75,7 +84,7 @@ void mulVectr(GLfloat *v, float c, GLfloat *result){
 * determines all normal vectors (one per triangle) of one object.
 *******************************************************************/
 void findNormals(object_gl *object){
-	object->normals = malloc(3 * object->num_vectr * sizeof(GLfloat));
+	object->normals = malloc(27 * object->num_vectr * sizeof(GLfloat));
 				
 
 	// Go through all triangles of object.
@@ -107,23 +116,48 @@ void findNormals(object_gl *object){
 		// Determine normal vector of one triangle.
 		GLfloat *vectr12 = malloc(object->vertx_per_vectr * sizeof(GLfloat));
 		GLfloat *vectr23 = malloc(object->vertx_per_vectr * sizeof(GLfloat));
+		GLfloat *vectr13 = malloc(object->vertx_per_vectr * sizeof(GLfloat));
 		GLfloat *normal = malloc(object->vertx_per_vectr * sizeof(GLfloat));
 
 		diffVectr(vectr2, vectr1, vectr12);
 		diffVectr(vectr3, vectr2, vectr23);
-		crossProduct(vectr12, vectr23, normal);
-		// Write normal vector to object buffer.
-		object->normals[i] = normal[0];
-		object->normals[i+1] = normal[1];
-		object->normals[i+2] = normal[2];
+		diffVectr(vectr3, vectr1, vectr13);
+		
+		crossProduct(vectr12, vectr13, normal);
+		object->normals[i*9] = normal[0];
+		object->normals[i*9+1] = normal[1];
+		object->normals[i*9+2] = normal[2];
 
+		crossProduct(vectr12, vectr23, normal);
+		object->normals[i*9+3] = normal[0];
+		object->normals[i*9+4] = normal[1];
+		object->normals[i*9+5] = normal[2];
+
+		crossProduct(vectr23, vectr13, normal);
+		object->normals[i*9+6] = normal[0];
+		object->normals[i*9+7] = normal[1];
+		object->normals[i*9+8] = normal[2];	
+
+		/*
+		object->normals[i*9] = 0.0;
+		object->normals[i*9+1] = 0.0;
+		object->normals[i*9+2] = 1.0;
+
+		object->normals[i*9+3] = 0.0;
+		object->normals[i*9+4] = 0.0;
+		object->normals[i*9+5] = 1.0;
+
+		object->normals[i*9+6] = 0.0;
+		object->normals[i*9+7] = 0.0;
+		object->normals[i*9+8] = 1.0;*/
+
+		// Write normal vector to object buffer.
+		
 		free(vectr1);
 		free(vectr2);
 		free(vectr3);
 		free(vectr12);
 		free(vectr23);
 		free(normal);
-
-		printf("%f, %f, %f\n", object->normals[i], object->normals[i+1], object->normals[i+2]);
 	}
 }

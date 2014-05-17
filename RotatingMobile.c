@@ -47,8 +47,8 @@
 #define BUTTON_LEFT		'a'
 #define BUTTON_RIGHT		'd'
 
-#define VERTX_SHADER		"vertexshader_phong.vs"
-#define FRAGM_SHADER		"fragmentshader_phong.fs"
+#define VERTX_SHADER		"vertexshader_gouraud.vs"
+#define FRAGM_SHADER		"fragmentshader_gouraud.fs"
 
 
 //Lighting

@@ -23,8 +23,7 @@ void init_object(object_gl *object) {
 	glBindBuffer(GL_ARRAY_BUFFER, object->cbo);
 	glBufferData(GL_ARRAY_BUFFER, object->num_vertx * 3 * sizeof(GLfloat), object->color_buffer_data, GL_STATIC_DRAW);
 
-	// Determine normals
-	findNormals(object);
+	
 }
 
 /******************************************************************

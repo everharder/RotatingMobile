@@ -279,10 +279,9 @@ void initialize(void){
 	/* Init Lighting */
 
 	// Create light components
-	GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-	GLfloat light_ambient[] = { 0.0, 0.0, 0.0, 1.0 };
+	GLfloat light_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+	GLfloat light_ambient[] = { 1.0, 1.0, 1.0, 1.0 };
 	GLfloat light_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
-        GLfloat mat_shininess[] = { 50.0 };
 	GLfloat light_position[] = { 1.0, 1.0, 0.0, 0.0 };
 
 	glShadeModel(GL_SMOOTH); //gourard shading

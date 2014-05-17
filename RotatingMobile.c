@@ -25,7 +25,7 @@
 #include "OBJParserMobile.h"
 #include "LoadShader.h"  
 #include "Matrix.h"  
-#include "Grid.h"
+#include "Wall.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -40,7 +40,7 @@
 #define ASPECT			 1
 #define CAMERA_DIST		30
 #define CAMERA_ROTATE_ANGLE	 1
-#define NUM_GRIDS		 3
+#define NUM_WALLS		 3
 
 #define BUTTON_UP		'w'
 #define BUTTON_DOWN		's'
@@ -61,7 +61,7 @@ float proj_matrix[16];
 float view_matrix[16]; 	
 
 node_object *root;
-object_gl *grids[NUM_GRIDS];	
+object_gl *walls[NUM_WALLS];	
 
 
 /******************************************************************
@@ -84,8 +84,8 @@ void display(){
 	//clear screen
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//draw grid
-	draw_n(grids, NUM_GRIDS, proj_matrix, view_matrix, shader_program);
+	//draw walls
+	draw_n(walls, NUM_WALLS, proj_matrix, view_matrix, shader_program);
 
 	//draw actual objects
 	draw_mobile(*root);
@@ -238,12 +238,12 @@ void init_objects() {
 		exit(EXIT_FAILURE);
 	}
 
-	// Grids
-	grids[0] = create_gridXY(-20.0, -10.0, -10.0, 20.0, 10.0, -10.0, 0.0, 0.0, 0.0, 20);
-	grids[1] = create_gridXZ(-20.0, -10.0, -10.0, 20.0, -10.0, 10.0, 0.0, 0.0, 0.0, 20);
-	grids[2] = create_gridYZ(-20.0, -10.0, -10.0, -20.0, 10.0, 10.0, 0.0, 0.0, 0.0, 20);
+	// Walls
+	walls[0] = create_wall(-20.0,-20.0,-20.0, 20.0, 20.0,-20.0, 8.0, 8.0, 0.0);
+	walls[1] = create_wall(-20.0,-20.0,-20.0, 20.0,-20.0, 20.0, 8.0, 8.0, 0.0);
+	walls[2] = create_wall(-20.0,-20.0,-20.0,-20.0, 20.0, 20.0, 8.0, 8.0, 0.0);
 
-	if(grids[0] == NULL || grids[1] == NULL || grids[2] == NULL){
+	if(walls[0] == NULL || walls[1] == NULL || walls[2] == NULL){
 		printf("error creating grids...\n");
 		exit(EXIT_FAILURE);
 	}
@@ -264,8 +264,8 @@ void initialize(void){
 	srand(time(NULL));
 	init_object_mobile(root);
 
-	for(int i=0; i < NUM_GRIDS; i++) 
-		init_object(grids[i]);
+	for(int i=0; i < NUM_WALLS; i++) 
+		init_object(walls[i]);
 
 	/* Setup shaders and shader program */
 	create_shader_program();
@@ -279,10 +279,9 @@ void initialize(void){
 	/* Init Lighting */
 
 	// Create light components
-	GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+	GLfloat light_specular[] = { 1.0, 1.0, 1.0, 1.0 };
 	GLfloat light_ambient[] = { 0.0, 0.0, 0.0, 1.0 };
 	GLfloat light_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
-        GLfloat mat_shininess[] = { 50.0 };
 	GLfloat light_position[] = { 1.0, 1.0, 0.0, 0.0 };
 
 	glShadeModel(GL_SMOOTH); //gourard shading
@@ -372,8 +371,8 @@ void free_memory(node_object *node){
 * ON_WINDOW_CLOSE handler
 *******************************************************************/
 void window_close(){
-	for(int i=0; i < NUM_GRIDS; i++) {
-		free(grids[i]);
+	for(int i=0; i < NUM_WALLS; i++) {
+		free(walls[i]);
 	}
 
 	free_memory(root);

@@ -3,6 +3,7 @@
 #include "ObjectGl.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "Util.h"
 
 
 /******************************************************************
@@ -71,6 +72,8 @@ object_gl* create_wallXY(float x1, float y1, float z1, float x2, float y2, float
 	grid->index_buffer_data[4] = 2;
 	grid->index_buffer_data[5] = 3;
 
+	findNormals(grid);
+
 	return grid;
 }
 
@@ -122,6 +125,8 @@ object_gl* create_wallXZ(float x1, float y1, float z1, float x2, float y2, float
 	grid->index_buffer_data[4] = 2;
 	grid->index_buffer_data[5] = 3;
 
+	findNormals(grid);
+
 	return grid;
 }
 
@@ -172,6 +177,8 @@ object_gl* create_wallYZ(float x1, float y1, float z1, float x2, float y2, float
 	grid->index_buffer_data[3] = 1;
 	grid->index_buffer_data[4] = 2;
 	grid->index_buffer_data[5] = 3;
+
+	findNormals(grid);
 
 	return grid;
 }

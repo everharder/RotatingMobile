@@ -47,6 +47,10 @@
 #define BUTTON_LEFT		'a'
 #define BUTTON_RIGHT		'd'
 
+#define VERTX_SHADER		"vertexshader_phong.vs"
+#define FRAGM_SHADER		"fragmentshader_phong.vs"
+
+
 //Lighting
 #define LIGHTSOURCE_TYPE	GL_SPECULAR		
 
@@ -180,8 +184,8 @@ void create_shader_program(){
 	}
 
 	/* Load shader code from file */
-	VertexShaderString = LoadShader("vertexshader.vs");
-	FragmentShaderString = LoadShader("fragmentshader.fs");
+	VertexShaderString = LoadShader(VERTX_SHADER);
+	FragmentShaderString = LoadShader(FRAGM_SHADER);
 
 	/* Separately add vertex and fragment shader to program */
 	add_shader(shader_program, VertexShaderString, GL_VERTEX_SHADER);

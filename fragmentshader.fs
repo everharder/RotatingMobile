@@ -2,8 +2,10 @@
 
 in vec3 position_eye, normal_eye;
 
+uniform mat4 ViewMatrix;
+
 // fixed point light properties
-vec3 light_position_world  = vec3 (0.0, 0.0, 2.0);
+vec3 light_position_world  = vec3 (15.0, 15.0, 15.0);
 vec3 Ls = vec3 (1.0, 1.0, 1.0); // white specular colour
 vec3 Ld = vec3 (0.7, 0.7, 0.7); // dull white diffuse light colour
 vec3 La = vec3 (0.2, 0.2, 0.2); // grey ambient colour
@@ -21,7 +23,13 @@ void main () {
   vec3 Ia = La * Ka;
 
   // diffuse intensity
-  vec3 Id = vec3 (0.0, 0.0, 0.0); // replace me later
+  // raise light position to eye space
+  vec3 light_position_eye = vec3 (ViewMatrix * vec4 (light_position_world, 1.0));
+  vec3 distance_to_light_eye = light_position_eye - position_eye;
+  vec3 direction_to_light_eye = normalize (distance_to_light_eye);
+  float dot_prod = dot (direction_to_light_eye, normal_eye);
+  dot_prod = max (dot_prod, 0.0);
+  vec3 Id = Ld * Kd * dot_prod; // final diffuse intensity
   
   // specular intensity
   vec3 Is = vec3 (0.0, 0.0, 0.0); // replace me later

@@ -75,10 +75,19 @@ void mulVectr(GLfloat *v, float c, GLfloat *result){
 * determines all normal vectors (one per triangle) of one object.
 *******************************************************************/
 void findNormals(object_gl *object){
-	object->normals = malloc(3 * object->num_vertx * sizeof(GLfloat));
+	object->normals = malloc(3 * object->num_vectr * sizeof(GLfloat));
+				
 
 	// Go through all triangles of object.
-	for (int i = 0; i < object->vertx_per_vectr * object->num_vectr; i+=object->vertx_per_vectr){
+	for (int i = 0; i < 3 * object->num_vectr; i+=3){
+		if(object->vertx_per_vectr < 3) {
+			object->normals[i] = 0.0;
+			object->normals[i+1] = 0.0;
+			object->normals[i+2] = 1.0;
+
+			continue;
+		}
+
 		// Get indices of vertices which form one triangle.
 		int index1 = object->index_buffer_data[i];
 		int index2 = object->index_buffer_data[i+1];
@@ -114,5 +123,7 @@ void findNormals(object_gl *object){
 		free(vectr12);
 		free(vectr23);
 		free(normal);
+
+		printf("%f, %f, %f\n", object->normals[i], object->normals[i+1], object->normals[i+2]);
 	}
 }

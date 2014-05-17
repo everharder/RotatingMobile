@@ -44,9 +44,9 @@ float ambientReflection(float intL, float kA){
 float phongLightModel(GLfloat *vectrL, GLfloat *vectrN, GLfloat *vectrV, float intL, int numOfLights, float kD, float kS, float kA, float m){
 	float intTemp = 0;
 
-	// This step must be evaluated for all light sources!!!
+	// TODO This step must be evaluated for all light sources!!!
 	intTemp += diffuseReflection(intL, vectrL, vectrN, kD) + specularReflection(intL, vectrL, vectrN, vectrV, kS, m);
-	// Determine ambientReflection only for one specific light source!!!
+	// TODO Determine ambientReflection only for one specific light source!!!
 	return ambientReflection(intL, kA) + intTemp;
 }
 
@@ -69,7 +69,9 @@ void gouraudShading(object_gl *object){
 			vectr3[j] = object->vertx_buffer_data[index3 * object->vertx_per_vectr + j);
 		}
 
-		GLfloat *n1 = crossProduct
+		// TODO Calculate normal vectors with crossProduct(...)!!
+
+		// TODO phongLightShading(...)
 	}
 
 }

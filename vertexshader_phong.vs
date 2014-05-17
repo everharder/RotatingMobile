@@ -23,7 +23,6 @@ layout (location = 0) in vec3 Position;
 layout (location = 1) in vec3 Normal;
 
 out vec3 normalDirection;
-out vec3 viewPosition;
 out vec4 vertexPosition;
 
 void main()
@@ -31,5 +30,4 @@ void main()
 	vec4 vertexPosition = ModelMatrix * vec4(Position, 1.0);
 	gl_Position = ProjectionMatrix*ViewMatrix*vertexPosition;
 	vec3 normalDirection = normalize(vec3(ModelMatrix * vec4(Normal, 0.0)));
-	vec3 viewPosition = vec3(inverse(ViewMatrix) * vec4(0.0, 0.0, 0.0, 1.0) - vertexPosition);
 }

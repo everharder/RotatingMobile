@@ -1,7 +1,6 @@
 #version 330
 
 in vec3 normalDirection;
-in vec3 viewPosition;
 in vec4 vertexPosition;
 
 out vec4 outColor;
@@ -28,8 +27,8 @@ void main()
 
 	interpColor = interpColor + vec4(La * Ka, 1.0);
 
+	vec3 viewDirection = normalize(vec3(inverse(ViewMatrix) * vec4(0.0, 0.0, 0.0, 1.0) - vertexPosition));
 	lightDirection = normalize(light_position_world - vec3(vertexPosition));
-	vec3 viewDirection = normalize(viewPosition);
 	cosAngIncidence = dot(normalize(normalDirection), lightDirection);
 	cosAngIncidence = clamp(cosAngIncidence, 0, 1);
 

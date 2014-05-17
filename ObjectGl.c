@@ -10,7 +10,7 @@
 *******************************************************************/
 void init_object(object_gl *object) {
 	glGenBuffers(1, &(object->vbo));
-	glGenBuffers(1, &(object->cbo));
+	
 	glGenBuffers(1, &(object->ibo));
 
 	glBindBuffer(GL_ARRAY_BUFFER, object->vbo);
@@ -31,9 +31,22 @@ void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLui
 	glBindBuffer(GL_ARRAY_BUFFER, object->vbo);
 	glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);;
 
-	glEnableVertexAttribArray(vColor);
-	glBindBuffer(GL_ARRAY_BUFFER, object->cbo);
-	glVertexAttribPointer(vColor, 3, GL_FLOAT,GL_FALSE, 0, 0);
+	//init normals
+	GLfloat *normals = malloc(object->num_vertx * 3);
+	for(int i=0; i < object->num_vertx; i++) {
+		normals[i*3 + 0] = 0.0;
+		normals[i*3 + 1] = 0.0;
+		normals[i*3 + 2] = 1.0;
+	}
+
+	GLuint normals_buf = 0;
+	glGenBuffers(1, &normals_buf);
+	glBindBuffer(GL_ARRAY_BUFFER, normals_buf);
+	glBufferData(GL_ARRAY_BUFFER, object->num_vertx * 3 * sizeof(GLfloat), normals, GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(vNormal);
+	glBindBuffer(GL_ARRAY_BUFFER, normals_buf);
+	glVertexAttribPointer(vNormal, 3, GL_FLOAT,GL_FALSE, 0, 0);
 
 	GLint size; 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, object->ibo);
@@ -70,7 +83,7 @@ void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLui
 
 	/* Disable attributes */
 	glDisableVertexAttribArray(vPosition);
-	glDisableVertexAttribArray(vColor);
+	glDisableVertexAttribArray(vNormal);
 }
 
 /******************************************************************

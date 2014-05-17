@@ -8,7 +8,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-enum DataID {vPosition = 0, vColor = 1}; 
+enum DataID {vPosition = 0, vNormal = 1}; 
 
 typedef struct {
 	float model_matrix[16];

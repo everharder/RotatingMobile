@@ -31,9 +31,9 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-#define BACKGROUND_COLOR_R	 1.0
-#define BACKGROUND_COLOR_G	 0.9
-#define BACKGROUND_COLOR_B	 0.9
+#define BACKGROUND_COLOR_R	 0.3
+#define BACKGROUND_COLOR_G	 0.3	
+#define BACKGROUND_COLOR_B	 0.3
 #define FOVY			50.0
 #define NEAR_PLANE	 	 0.5
 #define FAR_PLANE		70.0
@@ -284,7 +284,7 @@ void initialize(void){
 	GLfloat ambientLight[] = { 0.2f, 0.2f, 0.2f, 1.0f };
 	GLfloat diffuseLight[] = { 0.8f, 0.8f, 0.8, 1.0f };
 	GLfloat specularLight[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-	GLfloat position[] = { -1.5f, 1.0f, -4.0f, 1.0f };
+	GLfloat position[] = { 20.0f, 20.0f, 0.0f, 1.0f };
 
 	// Assign created components to GL_LIGHT0
 	glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);

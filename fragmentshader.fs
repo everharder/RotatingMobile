@@ -25,8 +25,7 @@ void main () {
   // diffuse intensity
   // raise light position to eye space
   vec3 light_position_eye = vec3 (ViewMatrix * vec4 (light_position_world, 1.0));
-  vec3 distance_to_light_eye = light_position_eye - position_eye;
-  vec3 direction_to_light_eye = normalize (distance_to_light_eye);
+  vec3 direction_to_light_eye = normalize (light_position_eye - position_eye);
   float dot_prod = dot (direction_to_light_eye, normal_eye);
   dot_prod = max (dot_prod, 0.0);
   vec3 Id = Ld * Kd * dot_prod; // final diffuse intensity

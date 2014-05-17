@@ -47,6 +47,9 @@
 #define BUTTON_LEFT		'a'
 #define BUTTON_RIGHT		'd'
 
+//Lighting
+#define LIGHTSOURCE_TYPE	GL_SPECULAR		
+
 /******************************************************************
 * globals
 *******************************************************************/
@@ -272,6 +275,25 @@ void initialize(void){
 
 	/* Set viewing transform */
 	SetTranslation(0.0, 0.0, -1 * CAMERA_DIST, view_matrix);
+
+	/* Init Lighting */
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+
+	// Create light components
+	GLfloat ambientLight[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+	GLfloat diffuseLight[] = { 0.8f, 0.8f, 0.8, 1.0f };
+	GLfloat specularLight[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+	GLfloat position[] = { -1.5f, 1.0f, -4.0f, 1.0f };
+
+	// Assign created components to GL_LIGHT0
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
+	glLightfv(GL_LIGHT0, GL_POSITION, position);
+
+	glShadeModel(GL_SMOOTH); //gourard shading
+
 }
 
 /******************************************************************

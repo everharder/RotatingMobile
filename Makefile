@@ -1,5 +1,5 @@
 CC = gcc
-OBJ = RotatingMobile.o LoadShader.o Matrix.o ObjectGl.o OBJParserMobile.o Grid.o Wall.o
+OBJ = RotatingMobile.o LoadShader.o Matrix.o Util.o ObjectGl.o OBJParserMobile.o Grid.o Wall.o
 CFLAGS = -g -Wall -Wextra -std="c99"
 
 LDLIBS=-lm -lglut -lGLEW -lGL

@@ -14,14 +14,14 @@ float dotProduct(GLfloat *v1, GLfloat *v2){
 *
 * determines the cross product of two 3D vectors.
 *******************************************************************/
-GLfloat* crossProduct(GLfloat *v1, GLfloat *v2){
-	GLfloat *result = calloc(3, sizeof(GLfloat));
+void crossProduct(GLfloat *v1, GLfloat *v2, GLfloat *result){
+	GLfloat temp[3] = {
+		v1[1] * v2[2] - v1[2] * v2[1],
+		v1[2] * v2[0] - v1[0] * v2[2],
+		v1[0] * v2[1] - v1[1] * v2[0]
+	};
 
-	result[0] = v1[1] * v2[2] - v1[2] * v2[1];
-	result[1] = v1[2] * v2[0] - v1[0] * v2[2];
-	result[2] = v1[0] * v2[1] - v1[1] * v2[0];
-
-	return result;
+	memcpy(result, temp, 3*sizeof(GLfloat));
 }
 
 /******************************************************************
@@ -29,14 +29,14 @@ GLfloat* crossProduct(GLfloat *v1, GLfloat *v2){
 *
 * determines the sum of two 3D vectors.
 *******************************************************************/
-GLfloat* sumVectr(GLfloat *v1, GLfloat *v2){
-	GLfloat *result = calloc(3, sizeof(GLfloat));
+void sumVectr(GLfloat *v1, GLfloat *v2, GLfloat *result){
+	GLfloat temp[3] = {
+		v1[0] + v2[0],
+		v1[1] + v2[1],
+		v1[2] + v2[2]
+	};
 
-	result[0] = v1[0] + v2[0];
-	result[1] = v1[1] + v2[1];
-	result[2] = v1[2] + v2[2];
-
-	return result;
+	memcpy(result, temp, 3*sizeof(GLfloat));
 }
 
 /******************************************************************
@@ -44,8 +44,14 @@ GLfloat* sumVectr(GLfloat *v1, GLfloat *v2){
 *
 * determines the difference of two 3D vectors.
 *******************************************************************/
-GLfloat* diffVectr(GLfloat *v1, GLfloat *v2){
-	return sumVectr(v1, mulVectr(v2, -1));
+void diffVectr(GLfloat *v1, GLfloat *v2, GLfloat *result){
+	GLfloat temp[3] = {
+		v1[0] - v2[0],
+		v1[1] - v2[1],
+		v1[2] - v2[2]
+	};
+
+	memcpy(result, temp, 3*sizeof(GLfloat));
 }
 
 /******************************************************************
@@ -53,12 +59,60 @@ GLfloat* diffVectr(GLfloat *v1, GLfloat *v2){
 *
 * multiplies one 3D vector with a scalar.
 *******************************************************************/
-GLfloat* mulVectr(GLfloat *v, float c){
-	GLfloat *result = calloc(3, sizeof(GLfloat));
+void mulVectr(GLfloat *v, float c, GLfloat *result){
+	GLfloat temp[3] = {
+		c * v[0],
+		c * v[1],
+		c * v[2]
+	};
 
-	result[0] = c * v[0];
-	result[1] = c * v[1];
-	result[2] = c * v[2];
+	memcpy(result, temp, 3*sizeof(GLfloat));
+}
 
-	return result;
+/******************************************************************
+* findNormals
+*
+* determines all normal vectors (one per triangle) of one object.
+*******************************************************************/
+void findNormals(object_gl *object){
+	object->normals = malloc(3 * object->num_vertx * sizeof(GLfloat));
+
+	// Go through all triangles of object.
+	for (int i = 0; i < object->vertx_per_vectr * object->num_vectr; i+=object->vertx_per_vectr){
+		// Get indices of vertices which form one triangle.
+		int index1 = object->index_buffer_data[i];
+		int index2 = object->index_buffer_data[i+1];
+		int index3 = object->index_buffer_data[i+2];
+
+		GLfloat *vectr1 = malloc(object->vertx_per_vectr * sizeof(GLfloat));
+		GLfloat *vectr2 = malloc(object->vertx_per_vectr * sizeof(GLfloat));
+		GLfloat *vectr3 = malloc(object->vertx_per_vectr * sizeof(GLfloat));
+
+		// Determine vector for each vertex in one triangle.
+		for (int j = 0; j < object->vertx_per_vectr; j++){
+			vectr1[j] = object->vertx_buffer_data[index1 * object->vertx_per_vectr + j];
+			vectr2[j] = object->vertx_buffer_data[index2 * object->vertx_per_vectr + j];
+			vectr3[j] = object->vertx_buffer_data[index3 * object->vertx_per_vectr + j];
+		}
+
+		// Determine normal vector of one triangle.
+		GLfloat *vectr12 = malloc(object->vertx_per_vectr * sizeof(GLfloat));
+		GLfloat *vectr23 = malloc(object->vertx_per_vectr * sizeof(GLfloat));
+		GLfloat *normal = malloc(object->vertx_per_vectr * sizeof(GLfloat));
+
+		diffVectr(vectr2, vectr1, vectr12);
+		diffVectr(vectr3, vectr2, vectr23);
+		crossProduct(vectr12, vectr23, normal);
+		// Write normal vector to object buffer.
+		object->normals[i] = normal[0];
+		object->normals[i+1] = normal[1];
+		object->normals[i+2] = normal[2];
+
+		free(vectr1);
+		free(vectr2);
+		free(vectr3);
+		free(vectr12);
+		free(vectr23);
+		free(normal);
+	}
 }

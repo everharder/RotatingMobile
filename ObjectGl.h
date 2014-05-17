@@ -21,6 +21,7 @@ typedef struct {
 	GLfloat  *vertx_buffer_data;
 	GLfloat  *color_buffer_data;
 	GLushort *index_buffer_data;
+	GLfloat  *normals;
 
 	int num_vertx;
 	int num_vectr;

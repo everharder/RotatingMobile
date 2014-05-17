@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 
 // All equations determine intensities for ONE TRIANGLE!!!
 
@@ -69,7 +71,10 @@ void gouraudShading(object_gl *object){
 			vectr3[j] = object->vertx_buffer_data[index3 * object->vertx_per_vectr + j);
 		}
 
-		// TODO Calculate normal vectors with crossProduct(...)!!
+		// TODO Calculate normal vector with crossProduct(...)!!
+		GLfloat *vectr12 = diffVectr(vectr1, vectr2);
+		GLfloat *vectr23 = diffVectr(vectr2, vectr3);
+		GLfloat *normal = crossProduct(vectr12, vectr23);
 
 		// TODO phongLightShading(...)
 	}

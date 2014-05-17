@@ -1,5 +1,6 @@
 #include "ObjectGl.h"
-#include "Matrix.h"	
+#include "Matrix.h"
+#include "Util.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -21,6 +22,9 @@ void init_object(object_gl *object) {
 
 	glBindBuffer(GL_ARRAY_BUFFER, object->cbo);
 	glBufferData(GL_ARRAY_BUFFER, object->num_vertx * 3 * sizeof(GLfloat), object->color_buffer_data, GL_STATIC_DRAW);
+
+	// Determine normals
+	findNormals(object);
 }
 
 /******************************************************************
@@ -33,11 +37,14 @@ void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLui
 
 	//init normals
 	GLfloat *normals = malloc(object->num_vertx * 3);
-	for(int i=0; i < object->num_vertx; i++) {
+	
+	normals = object->normals;
+/*	for(int i=0; i < object->num_vertx; i++) {
 		normals[i*3 + 0] = 0.0;
 		normals[i*3 + 1] = 0.0;
 		normals[i*3 + 2] = 1.0;
 	}
+*/
 
 	GLuint normals_buf = 0;
 	glGenBuffers(1, &normals_buf);

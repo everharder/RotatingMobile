@@ -15,13 +15,14 @@ typedef struct {
 
 	//buffer objects
 	GLuint vbo;
+	GLuint nbo;
 	GLuint cbo;
 	GLuint ibo;
 
 	GLfloat  *vertx_buffer_data;
 	GLfloat  *color_buffer_data;
 	GLushort *index_buffer_data;
-	GLfloat  *normals;
+	GLfloat  *normal_buffer_data;
 
 	int num_vertx;
 	int num_vectr;

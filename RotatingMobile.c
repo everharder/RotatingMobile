@@ -1,5 +1,5 @@
 /******************************************************************
-* PROGRAMMING EXERCISE 1 - Rotating Mobile
+* PROGRAMMING EXERCISE 2 - Rotating Mobile
 * authors: 	Daniel Eberharter
 *	  	Stefan Haselwanter
 * date: 	07.04.2014   
@@ -26,7 +26,6 @@
 #include "LoadShader.h"  
 #include "Matrix.h"  
 #include "Wall.h"
-#include "Util.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -226,7 +225,7 @@ void create_shader_program(){
 void init_object_mobile(node_object *node) {
 	init_object(&(node->obj));
 // Determine normals
-	findNormals(&(node->obj));
+//	findNormals(&(node->obj));
 
 	if(node->child_l != NULL)
 		init_object_mobile(node->child_l);

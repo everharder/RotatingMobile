@@ -1,6 +1,7 @@
 #include "ObjectGl.h"
 #include "Matrix.h"
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 
 /******************************************************************
@@ -36,7 +37,7 @@ void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLui
 
 	//init normals
 	GLfloat *normals = malloc(object->num_vertx * 3);
-	normals = object->normals;
+	normals = object->normal_buffer_data;
 
 	GLuint normals_buf = 0;
 	glGenBuffers(1, &normals_buf);

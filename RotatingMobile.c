@@ -62,14 +62,14 @@
 #define NUM_WALLS		3
 
 //Lighting
-#define LIGHT0_POSITION		{  0.0,  0.0, 10.0,  1.0 }
+#define LIGHT0_POSITION		{  0.0,  0.0, 20.0,  1.0 }
 #define LIGHT0_SPECULAR		{  1.0,  1.0,  1.0,  1.0 }
-#define LIGHT0_AMBIENT		{  0.8,  0.2,  0.0,  1.0 }
+#define LIGHT0_AMBIENT		{  0.7,  0.7,  0.7,  1.0 }
 #define LIGHT0_DIFFUSE		{  0.2,  0.2,  0.2,  1.0 }
 
-#define LIGHT1_POSITION		{ 15.0, 15.0,  0.0,  1.0 }
+#define LIGHT1_POSITION		{ 20.0, 20.0,  0.0,  1.0 }
 #define LIGHT1_SPECULAR		{  1.0,  1.0,  1.0,  1.0 }
-#define LIGHT1_AMBIENT		{  0.5,  0.5,  0.5,  1.0 }
+#define LIGHT1_AMBIENT		{  0.0,  0.0,  0.0,  1.0 }
 #define LIGHT1_DIFFUSE		{  0.2,  0.2,  0.2,  1.0 }
 
 

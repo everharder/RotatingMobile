@@ -39,6 +39,7 @@ typedef struct {
 } object_gl;
 
 typedef struct lightsource {
+	GLfloat intensity[4];
 	//reflection
 	GLfloat ambient[4];
 	GLfloat diffuse[4];

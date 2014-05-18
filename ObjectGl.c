@@ -82,27 +82,31 @@ void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLui
 	}
 	glUniform1i(uniform_numlights, num_lights);*/
 
+	GLint uniform_light_intensity = glGetUniformLocation(shader_program, "Li");
 	GLint uniform_light_ambient  = glGetUniformLocation(shader_program, "La");
 	GLint uniform_light_diffuse  = glGetUniformLocation(shader_program, "Ld");
 	GLint uniform_light_specular = glGetUniformLocation(shader_program, "Ls");
 	GLint uniform_light_position = glGetUniformLocation(shader_program, "Lp");
-	if(uniform_light_ambient == -1 || uniform_light_specular == -1 || 
+	if(uniform_light_intensity == -1 || uniform_light_ambient == -1 || uniform_light_specular == -1 || 
 	   uniform_light_diffuse == -1 || uniform_light_position == -1) {
 		fprintf(stderr, "Could not bind uniforms for lighting\n");
 		exit(-1);
 	}
 
+	GLfloat lights_intensity [4 * num_lights];
 	GLfloat lights_ambient [4 * num_lights];
 	GLfloat lights_diffuse [4 * num_lights];
 	GLfloat lights_specular[4 * num_lights];
 	GLfloat lights_position[4 * num_lights];
 	for(int i=0; i < num_lights; i++) {
+		memcpy(&(lights_intensity  [i*4]), &(light[i].intensity), 4 * sizeof(GLfloat));
 		memcpy(&(lights_ambient  [i*4]), &(light[i].ambient), 4 * sizeof(GLfloat));
 		memcpy(&(lights_diffuse  [i*4]), &(light[i].diffuse), 4 * sizeof(GLfloat));
 		memcpy(&(lights_specular [i*4]), &(light[i].specular),4 * sizeof(GLfloat));
 		memcpy(&(lights_position [i*4]), &(light[i].position),4 * sizeof(GLfloat));
  	}
 
+	glUniform4fv(uniform_light_intensity,  num_lights, lights_intensity);
 	glUniform4fv(uniform_light_ambient,  num_lights, lights_ambient);
 	glUniform4fv(uniform_light_diffuse,  num_lights, lights_diffuse); 
 	glUniform4fv(uniform_light_specular, num_lights, lights_specular); 

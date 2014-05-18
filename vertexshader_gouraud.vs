@@ -8,6 +8,7 @@ uniform mat4 ViewMatrix;
 uniform mat4 ModelMatrix;
 
 //uniform int num_lights;
+uniform vec4 Li[2]; // light intensity
 uniform vec4 Lp[2]; // light position
 uniform vec4 Ls[2]; // light specular
 uniform vec4 Ld[2]; // light diffuse
@@ -42,7 +43,7 @@ void main()
 		cosAngIncidence = dot(normalDirection, lightDirection);
 		cosAngIncidence = clamp(cosAngIncidence, 0, 1);
 
-		interpColor = interpColor + Ld[i] * Kd[i] * cosAngIncidence;
+		interpColor = interpColor + Li[i] * Kd[i] * cosAngIncidence;
 
 		reflectDirection = reflect(-lightDirection, normalDirection);
 		phongTerm = dot(viewDirection, reflectDirection);
@@ -53,6 +54,6 @@ void main()
 
 		phongTerm = pow(phongTerm, specular_exponent);
 
-		interpColor = interpColor + Ls[i] * Ks[i] * phongTerm;
+		interpColor = interpColor + Li[i] * Ks[i] * phongTerm;
 	}
 }

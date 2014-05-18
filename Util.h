@@ -16,7 +16,9 @@ void crossProduct(GLfloat *v1, GLfloat *v2, GLfloat* result);
 void sumVectr(GLfloat *v1, GLfloat *v2, GLfloat* result);
 void diffVectr(GLfloat *v1, GLfloat *v2, GLfloat* result);
 void mulVectr(GLfloat *v, float c, GLfloat* result);
-void findNormals(object_gl *object);
+void RGBtoHSV(GLfloat rgb[4], GLfloat hsv[4]);
+void HSVtoRGB(GLfloat hsv[4], GLfloat rgb[4]);
+//void findNormals(object_gl *object);
 
 
 #endif

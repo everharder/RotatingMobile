@@ -78,6 +78,113 @@ void mulVectr(GLfloat *v, float c, GLfloat *result){
 	memcpy(result, temp, 3*sizeof(GLfloat));
 }
 
+// r,g,b values are from 0 to 1
+// h = [0,360], s = [0,1], v = [0,1]
+//		if s == 0, then h = -1 (undefined)
+
+/******************************************************************
+* RGBtoHSV
+*
+* converts from RGB to HSV color space.
+*******************************************************************/
+void RGBtoHSV(GLfloat rgb[4], GLfloat hsv[4]){
+	GLfloat r, g, b, min, max, delta;
+	
+	r = rgb[0];
+	g = rgb[1];
+	b = rgb[2];
+	min = fmin(fmin(r, g), b);
+	max = fmax(fmax(r, g), b);
+	hsv[2] = max;				// v
+	delta = max - min;
+
+	if(max == 0){
+		// r = g = b = 0		
+		hsv[1] = 0;			// s = 0
+		hsv[0] = -1;			// h is undefined
+	}
+	else{
+		hsv[1] = delta / max;		// s
+
+		if(r == max)
+			hsv[0] = 60 * (g - b) / delta;	// between yellow & magenta
+		else if( g == max )
+			hsv[0] = 60 * (2 + (b - r) / delta);	// between cyan & yellow
+		else
+			hsv[0] = 60 * (4 + (r - g) / delta);	// between magenta & cyan
+		
+		if(hsv[0] < 0)	hsv[0] += 360;
+	}
+
+	hsv[3] = rgb[3];
+}
+
+/******************************************************************
+* HSVtoRGB
+*
+* converts from HSV to RGB color space.
+*******************************************************************/
+void HSVtoRGB(GLfloat hsv[4], GLfloat rgb[4]){
+	GLfloat h, s, v, f, p, q, t;
+	int i;
+
+	h = hsv[0];
+	s = hsv[1];
+	v = hsv[2];
+
+	if(s == 0) {
+		// achromatic (grey)
+		rgb[0] = v;
+		rgb[1] = v;
+		rgb[2] = v;
+	}
+	else {
+		h = h / 60;			// sector 0 to 5
+		i = floor(h);
+		f = h - i;			// factorial part of h
+		p = v * (1 - s);
+		q = v * (1 - s * f);
+		t = v * (1 - s * (1 - f));
+
+		switch(i) {
+			case 0:
+				rgb[0] = v;
+				rgb[1] = t;
+				rgb[2] = p;
+				break;
+			case 1:
+				rgb[0] = q;
+				rgb[1] = v;
+				rgb[2] = p;
+				break;
+			case 2:
+				rgb[0] = p;
+				rgb[1] = v;
+				rgb[2] = t;
+				break;
+			case 3:
+				rgb[0] = p;
+				rgb[1] = q;
+				rgb[2] = v;
+				break;
+			case 4:
+				rgb[0] = t;
+				rgb[1] = p;
+				rgb[2] = v;
+				break;
+			case 5:
+				rgb[0] = v;
+				rgb[1] = p;
+				rgb[2] = q;
+				break;
+			default:
+				break;
+		}
+	}
+
+	rgb[3] = hsv[3];
+}
+
 /******************************************************************
 * findNormals
 *

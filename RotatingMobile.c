@@ -28,6 +28,7 @@
 #include "LoadShader.h"  
 #include "Matrix.h"  
 #include "Wall.h"
+#include "Util.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -48,6 +49,11 @@
 #define BTN_LEFT		'a'
 #define BTN_RIGHT		'd'
 #define BTN_TGL_SHADING		'0'
+#define BTN_HUE_UP		72
+#define BTN_HUE_DOWN		80
+#define BTN_VALUE_UP		75
+#define BTN_VALUE_DOWN		77
+
 
 //Shaders
 #define GOURAUD_VS		"vertexshader_gouraud.vs"
@@ -63,11 +69,13 @@
 
 //Lighting
 #define LIGHT0_POSITION		{  0.0,  0.0, 20.0,  1.0 }
+#define LIGHT0_INTENSITY	{  1.0,  0.0,  0.0,  1.0 }
 #define LIGHT0_SPECULAR		{  1.0,  1.0,  1.0,  1.0 }
 #define LIGHT0_AMBIENT		{  0.7,  0.7,  0.7,  1.0 }
 #define LIGHT0_DIFFUSE		{  0.2,  0.2,  0.2,  1.0 }
 
 #define LIGHT1_POSITION		{ 20.0, 20.0,  0.0,  1.0 }
+#define LIGHT1_INTENSITY	{  0.0,  1.0,  0.0,  1.0 }
 #define LIGHT1_SPECULAR		{  1.0,  1.0,  1.0,  1.0 }
 #define LIGHT1_AMBIENT		{  0.0,  0.0,  0.0,  1.0 }
 #define LIGHT1_DIFFUSE		{  0.2,  0.2,  0.2,  1.0 }
@@ -279,7 +287,12 @@ void init_objects() {
 	}
 }
 
+/******************************************************************
+* init lights
+*******************************************************************/
 void init_lights() {
+	GLfloat light0_intensity[]  = LIGHT0_INTENSITY;
+	memcpy( light[0].intensity,  light0_intensity,  4 * sizeof(GLfloat));
 	GLfloat light0_ambient[]  = LIGHT0_AMBIENT;
 	memcpy( light[0].ambient,  light0_ambient,  4 * sizeof(GLfloat));
 	GLfloat light0_diffuse[]  = LIGHT0_DIFFUSE;
@@ -295,6 +308,8 @@ void init_lights() {
 	glLightfv(GL_LIGHT0, GL_SPECULAR, light[0].specular);
 	glLightfv(GL_LIGHT0, GL_POSITION, light[0].position);
 
+	GLfloat light1_intensity[]  = LIGHT1_INTENSITY;
+	memcpy( light[1].intensity,  light1_intensity,  4 * sizeof(GLfloat));
 	GLfloat light1_ambient[]  = LIGHT1_AMBIENT;
 	memcpy( light[1].ambient,  light1_ambient,  4 * sizeof(GLfloat));
 	GLfloat light1_diffuse[]  = LIGHT1_DIFFUSE;
@@ -371,6 +386,7 @@ void mouse_input(int button, int state, int x, int y){
 void key_input(unsigned char key, int x, int y){
 	float rotation[16];
 	float translte[16];
+	GLfloat hsv[4];
 	
 	printf("KEY  @ x:%d y:%d key:%c\n",x,y,key);		
 
@@ -400,6 +416,26 @@ void key_input(unsigned char key, int x, int y){
 						shader_idx = GOURAUD_SHADER_CONST;
 						create_shader_program(GOURAUD_VS, GOURAUD_FS);
 					}
+					break;
+		case BTN_HUE_UP:	RGBtoHSV(light[0].intensity, hsv);
+					hsv[0] += 2.0f;
+					if (hsv[0] > 360.0f) hsv[0] = 360.0f;
+					HSVtoRGB(hsv, light[0].intensity);
+					break;
+		case BTN_HUE_DOWN:	RGBtoHSV(light[0].intensity, hsv);
+					hsv[0] -= 2.0f;
+					if (hsv[0] < 0.0f) hsv[0] = 0.0f;
+					HSVtoRGB(hsv, light[0].intensity);
+					break;
+		case BTN_VALUE_UP:	RGBtoHSV(light[0].intensity, hsv);
+					hsv[2] += 0.02f;
+					if (hsv[2] > 1.0f) hsv[2] = 1.0f;
+					HSVtoRGB(hsv, light[0].intensity);
+					break;
+		case BTN_VALUE_DOWN:	RGBtoHSV(light[0].intensity, hsv);
+					hsv[2] -= 0.02f;
+					if (hsv[2] < 0.0f) hsv[2] = 0.0f;
+					HSVtoRGB(hsv, light[0].intensity);
 					break;
 	};
 

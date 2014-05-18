@@ -17,6 +17,7 @@ object_gl* init_wall(){
 	grid->rotation_spd = 0;
 	grid->rotation_dir = 1;
 	grid->vertx_buffer_data = malloc(grid->num_vertx * 3 * sizeof(GLfloat));
+	grid->normal_buffer_data = malloc(grid->num_vertx * grid->vertx_per_vectr * sizeof(GLfloat));
 	grid->color_buffer_data = malloc(grid->num_vertx * 3 * sizeof(GLfloat));
 	grid->index_buffer_data = malloc(grid->num_vectr * grid->vertx_per_vectr * sizeof(GLushort));
 	SetIdentityMatrix(grid->model_matrix);
@@ -57,15 +58,14 @@ object_gl* create_wallXY(float x1, float y1, float z1, float x2, float y2, float
 	grid->vertx_buffer_data[11] = z1;
 
 	// Define color and normals
-	grid->normals = malloc(grid->vertx_per_vectr * grid->num_vertx * sizeof(GLfloat));
 	for (int i = 0; i < grid->num_vertx; i++){
 		grid->color_buffer_data[3*i+0] = colorR;
 		grid->color_buffer_data[3*i+1] = colorG;
 		grid->color_buffer_data[3*i+2] = colorB;
 
-		grid->normals[i*3 + 0] = 0.0;
-		grid->normals[i*3 + 1] = 0.0;
-		grid->normals[i*3 + 2] = 1.0;
+		grid->normal_buffer_data[i*3 + 0] = 0.0;
+		grid->normal_buffer_data[i*3 + 1] = 0.0;
+		grid->normal_buffer_data[i*3 + 2] = 1.0;
 	}
 
 	// Define index
@@ -113,15 +113,14 @@ object_gl* create_wallXZ(float x1, float y1, float z1, float x2, float y2, float
 	grid->vertx_buffer_data[11] = z2;
 
 	// Define color and normals
-	grid->normals = malloc(grid->vertx_per_vectr * grid->num_vertx * sizeof(GLfloat));
 	for (int i = 0; i < grid->num_vertx; i++){
 		grid->color_buffer_data[3*i+0] = colorR;
 		grid->color_buffer_data[3*i+1] = colorG;
 		grid->color_buffer_data[3*i+2] = colorB;
 
-		grid->normals[i*3 + 0] = 0.0;
-		grid->normals[i*3 + 1] = 1.0;
-		grid->normals[i*3 + 2] = 0.0;
+		grid->normal_buffer_data[i*3 + 0] = 0.0;
+		grid->normal_buffer_data[i*3 + 1] = 1.0;
+		grid->normal_buffer_data[i*3 + 2] = 0.0;
 	}
 
 	// Define index
@@ -169,15 +168,14 @@ object_gl* create_wallYZ(float x1, float y1, float z1, float x2, float y2, float
 	grid->vertx_buffer_data[11] = z1;
 
 	// Define color and normals
-	grid->normals = malloc(grid->vertx_per_vectr * grid->num_vertx * sizeof(GLfloat));
 	for (int i = 0; i < grid->num_vertx; i++){
 		grid->color_buffer_data[3*i+0] = colorR;
 		grid->color_buffer_data[3*i+1] = colorG;
 		grid->color_buffer_data[3*i+2] = colorB;
 
-		grid->normals[i*3 + 0] = 1.0;
-		grid->normals[i*3 + 1] = 0.0;
-		grid->normals[i*3 + 2] = 0.0;
+		grid->normal_buffer_data[i*3 + 0] = 1.0;
+		grid->normal_buffer_data[i*3 + 1] = 0.0;
+		grid->normal_buffer_data[i*3 + 2] = 0.0;
 	}
 
 	// Define index

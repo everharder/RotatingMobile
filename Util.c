@@ -83,8 +83,9 @@ void mulVectr(GLfloat *v, float c, GLfloat *result){
 *
 * determines all normal vectors (one per triangle) of one object.
 *******************************************************************/
+/*
 void findNormals(object_gl *object){
-	object->normals = malloc(27 * object->num_vectr * sizeof(GLfloat));
+	object->normal_buffer_data = malloc(27 * object->num_vectr * sizeof(GLfloat));
 				
 
 	// Go through all triangles of object.
@@ -138,18 +139,18 @@ void findNormals(object_gl *object){
 		object->normals[i*9+7] = normal[1];
 		object->normals[i*9+8] = normal[2];	
 
-		/*
-		object->normals[i*9] = 0.0;
-		object->normals[i*9+1] = 0.0;
-		object->normals[i*9+2] = 1.0;
+		
+//		object->normals[i*9] = 0.0;
+//		object->normals[i*9+1] = 0.0;
+//		object->normals[i*9+2] = 1.0;
 
-		object->normals[i*9+3] = 0.0;
-		object->normals[i*9+4] = 0.0;
-		object->normals[i*9+5] = 1.0;
+//		object->normals[i*9+3] = 0.0;
+//		object->normals[i*9+4] = 0.0;
+//		object->normals[i*9+5] = 1.0;
 
-		object->normals[i*9+6] = 0.0;
-		object->normals[i*9+7] = 0.0;
-		object->normals[i*9+8] = 1.0;*/
+//		object->normals[i*9+6] = 0.0;
+//		object->normals[i*9+7] = 0.0;
+//		object->normals[i*9+8] = 1.0;
 
 		// Write normal vector to object buffer.
 		
@@ -160,4 +161,4 @@ void findNormals(object_gl *object){
 		free(vectr23);
 		free(normal);
 	}
-}
+}*/

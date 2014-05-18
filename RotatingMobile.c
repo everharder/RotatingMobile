@@ -11,6 +11,8 @@
 
 		the code may contain fragments of the programming
 		example no. 2 from Matthias Harders.
+ * controls: 	w,a,s,d ... move camera
+		0 	... toggle shading
 *******************************************************************/
 
 #include <stdio.h>
@@ -41,19 +43,49 @@
 #define ASPECT			 1
 #define CAMERA_DIST		30
 #define CAMERA_ROTATE_ANGLE	 1
-#define NUM_WALLS		 3
 
-#define BUTTON_UP		'w'
-#define BUTTON_DOWN		's'
-#define BUTTON_LEFT		'a'
-#define BUTTON_RIGHT		'd'
+#define BTN_UP			'w'
+#define BTN_DOWN		's'
+#define BTN_LEFT		'a'
+#define BTN_RIGHT		'd'
+#define BTN_TGL_SHADING		'0'
 
-#define VERTX_SHADER		"vertexshader_gouraud.vs"
-#define FRAGM_SHADER		"fragmentshader_gouraud.fs"
+//Shaders
+#define GOURAUD_VS		"vertexshader_gouraud.vs"
+#define GOURAUD_FS		"fragmentshader_gouraud.fs"
+#define GOURAUD_SHADER_CONST	0
+#define PHONG_VS		"vertexshader_phong.vs"
+#define PHONG_FS		"fragmentshader_phong.fs"
+#define PHONG_SHADER_CONST	1
+#define INIT_SHADER_CONST	GOURAUD_SHADER_CONST
 
+#define NUM_LIGHT		2
+#define NUM_WALLS		3
 
 //Lighting
-#define LIGHTSOURCE_TYPE	GL_SPECULAR		
+#define LIGHT0_POSITION		{  0.0,  0.0, 20.0,  0.0 }
+#define LIGHT0_SPECULAR		{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT0_AMBIENT		{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT0_DIFFUSE		{  1.0,  1.0,  1.0,  1.0 }
+
+#define LIGHT1_POSITION		{ 15.0, 15.0,  0.0,  0.0 }
+#define LIGHT1_SPECULAR		{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT1_AMBIENT		{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT1_DIFFUSE		{  1.0,  1.0,  1.0,  1.0 }
+
+
+/******************************************************************
+* structs
+******************************************************************/
+typedef struct lightsource {
+	//reflection
+	GLfloat ambient[4];
+	GLfloat diffuse[4];
+	GLfloat specular[4];
+
+	//position
+	GLfloat position[4];
+} lightsource;
 
 /******************************************************************
 * globals
@@ -61,12 +93,14 @@
 GLuint shader_program;
 static const char* VertexShaderString;
 static const char* FragmentShaderString;		
+short shader_idx = INIT_SHADER_CONST;
 
 float proj_matrix[16]; 	
 float view_matrix[16]; 	
 
 node_object *root;
 object_gl *walls[NUM_WALLS];	
+lightsource light[NUM_LIGHT];
 
 
 /******************************************************************
@@ -175,7 +209,7 @@ void add_shader(GLuint shader_program, const char* ShaderCode, GLenum ShaderType
 /******************************************************************
 * create shader program 
 *******************************************************************/
-void create_shader_program(){
+void create_shader_program(char *vertx_shader, char *fragm_shader){
 	/* Allocate shader object */
 	shader_program = glCreateProgram();
 
@@ -185,8 +219,8 @@ void create_shader_program(){
 	}
 
 	/* Load shader code from file */
-	VertexShaderString = LoadShader(VERTX_SHADER);
-	FragmentShaderString = LoadShader(FRAGM_SHADER);
+	VertexShaderString   = LoadShader(vertx_shader);
+	FragmentShaderString = LoadShader(fragm_shader);
 
 	/* Separately add vertex and fragment shader to program */
 	add_shader(shader_program, VertexShaderString, GL_VERTEX_SHADER);
@@ -256,6 +290,43 @@ void init_objects() {
 	}
 }
 
+void init_lights() {
+	GLfloat light0_ambient[]  = LIGHT0_AMBIENT;
+	memcpy( light0_ambient, light[0].ambient, 4 * sizeof(GLfloat));
+	GLfloat light0_diffuse[]  = LIGHT0_DIFFUSE;
+	memcpy( light0_diffuse, light[0].diffuse, 4 * sizeof(GLfloat));
+	GLfloat light0_specular[] = LIGHT0_SPECULAR;
+	memcpy( light0_specular,light[0].specular,4 * sizeof(GLfloat));
+	GLfloat light0_position[] = LIGHT0_POSITION;
+	memcpy( light0_position,light[0].position,4 * sizeof(GLfloat));
+
+	// Assign created components to GL_LIGHT0
+	glLightfv(GL_LIGHT0, GL_AMBIENT,  light[0].ambient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE,  light[0].diffuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, light[0].specular);
+	glLightfv(GL_LIGHT0, GL_POSITION, light[0].position);
+
+	GLfloat light1_ambient[]  = LIGHT1_AMBIENT;
+	memcpy( light1_ambient, light[1].ambient, 4 * sizeof(GLfloat));
+	GLfloat light1_diffuse[]  = LIGHT1_DIFFUSE;
+	memcpy( light1_diffuse, light[1].diffuse, 4 * sizeof(GLfloat));
+	GLfloat light1_specular[] = LIGHT1_SPECULAR;
+	memcpy( light1_specular,light[1].specular,4 * sizeof(GLfloat));
+	GLfloat light1_position[] = LIGHT1_POSITION;
+	memcpy( light1_position,light[1].position,4 * sizeof(GLfloat));
+
+	// Assign created components to GL_LIGHT0
+	glLightfv(GL_LIGHT1, GL_AMBIENT,  light[1].ambient);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE,  light[1].diffuse);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, light[1].specular);
+	glLightfv(GL_LIGHT1, GL_POSITION, light[1].position);
+
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHT1);
+	glEnable(GL_DEPTH_TEST);
+}
+
 /******************************************************************
 * initialize
 *******************************************************************/
@@ -275,7 +346,10 @@ void initialize(void){
 		init_object(walls[i]);
 
 	/* Setup shaders and shader program */
-	create_shader_program();
+	if(shader_idx == PHONG_SHADER_CONST)
+		create_shader_program(PHONG_VS, PHONG_FS);
+	else
+		create_shader_program(GOURAUD_VS, GOURAUD_FS);
 
 	/* Set projection transform */
 	SetPerspectiveMatrix(FOVY, ASPECT, NEAR_PLANE, FAR_PLANE, proj_matrix);
@@ -284,23 +358,7 @@ void initialize(void){
 	SetTranslation(0.0, 0.0, -1 * CAMERA_DIST, view_matrix);
 
 	/* Init Lighting */
-
-	// Create light components
-	GLfloat light_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-	GLfloat light_ambient[] = { 1.0, 1.0, 1.0, 1.0 };
-	GLfloat light_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
-	GLfloat light_position[] = { 15.0, 15.0, 15.0, 0.0 };
-
-	// Assign created components to GL_LIGHT0
-	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-
-	
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glEnable(GL_DEPTH_TEST);
+	init_lights();
 }
 
 /******************************************************************
@@ -325,26 +383,34 @@ void key_input(unsigned char key, int x, int y){
 	float rotation[16];
 	float translte[16];
 	
-	printf("KEY  @ x:%d y:%d key:%d\n",x,y,key);		
+	printf("KEY  @ x:%d y:%d key:%c\n",x,y,key);		
 
-	if(key != BUTTON_UP && key != BUTTON_DOWN && key != BUTTON_LEFT && key != BUTTON_RIGHT)
+	if(key != BTN_UP && key != BTN_DOWN && key != BTN_LEFT && key != BTN_RIGHT)
 		return;
 
 	SetTranslation(0.0, 0.0, CAMERA_DIST, translte);
 	MultiplyMatrix(translte, view_matrix, view_matrix);
 
 	switch(key) {
-		case BUTTON_RIGHT: 	SetRotationY(CAMERA_ROTATE_ANGLE, rotation); 		 
+		case BTN_RIGHT: 	SetRotationY(CAMERA_ROTATE_ANGLE, rotation); 		 
 					MultiplyMatrix(rotation, view_matrix, view_matrix); 
 					break;
-		case BUTTON_LEFT: 	SetRotationY(360 - CAMERA_ROTATE_ANGLE, rotation); 
+		case BTN_LEFT: 		SetRotationY(360 - CAMERA_ROTATE_ANGLE, rotation); 
 					MultiplyMatrix(rotation, view_matrix, view_matrix); 
 					break;
-		case BUTTON_UP:		SetRotationX(CAMERA_ROTATE_ANGLE, rotation); 
+		case BTN_UP:		SetRotationX(CAMERA_ROTATE_ANGLE, rotation); 
 					MultiplyMatrix(rotation, view_matrix, view_matrix); 
 					break;
-		case BUTTON_DOWN:	SetRotationX(360 - CAMERA_ROTATE_ANGLE, rotation); 
+		case BTN_DOWN:		SetRotationX(360 - CAMERA_ROTATE_ANGLE, rotation); 
 					MultiplyMatrix(rotation, view_matrix, view_matrix); 
+					break;
+		case BTN_TGL_SHADING:	if(shader_idx == GOURAUD_SHADER_CONST) {
+						shader_idx = PHONG_SHADER_CONST;
+						create_shader_program(PHONG_VS, PHONG_FS);
+					} else {
+						shader_idx = GOURAUD_SHADER_CONST;
+						create_shader_program(GOURAUD_VS, GOURAUD_FS);
+					}
 					break;
 	};
 

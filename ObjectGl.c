@@ -29,21 +29,14 @@ void init_object(object_gl *object) {
 /******************************************************************
 * DrawSingle
 *******************************************************************/
-void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLuint shader_program) {
+void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLuint shader_program, lightsource *light, int num_lights) {
 	glEnableVertexAttribArray(vPosition);
 	glBindBuffer(GL_ARRAY_BUFFER, object->vbo);
 	glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);;
 
 	//init normals
 	GLfloat *normals = malloc(object->num_vertx * 3);
-	
 	normals = object->normals;
-/*	for(int i=0; i < object->num_vertx; i++) {
-		normals[i*3 + 0] = 0.0;
-		normals[i*3 + 1] = 0.0;
-		normals[i*3 + 2] = 1.0;
-	}
-*/
 
 	GLuint normals_buf = 0;
 	glGenBuffers(1, &normals_buf);
@@ -81,6 +74,74 @@ void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLui
 	}
 	glUniformMatrix4fv(RotationUniform, 1, GL_TRUE, object->model_matrix);  
 
+/*	GLint uniform_numlights = glGetUniformLocation(shader_program, "num_lights");
+	if (uniform_numlights == -1) {
+		fprintf(stderr, "Could not bind uniform num_lights\n");
+		exit(-1);
+	}
+	glUniform1i(uniform_numlights, num_lights);*/
+
+	GLint uniform_light_ambient  = glGetUniformLocation(shader_program, "La");
+	GLint uniform_light_diffuse  = glGetUniformLocation(shader_program, "Ld");
+	GLint uniform_light_specular = glGetUniformLocation(shader_program, "Ls");
+	GLint uniform_light_position = glGetUniformLocation(shader_program, "Lp");
+	if(uniform_light_ambient == -1 || uniform_light_specular == -1 || 
+	   uniform_light_diffuse == -1 || uniform_light_position == -1) {
+		fprintf(stderr, "Could not bind uniforms for lighting\n");
+		exit(-1);
+	}
+
+	GLfloat lights_ambient [4 * num_lights];
+	GLfloat lights_diffuse [4 * num_lights];
+	GLfloat lights_specular[4 * num_lights];
+	GLfloat lights_position[4 * num_lights];
+	for(int i=0; i < num_lights; i++) {
+		memcpy(&(lights_ambient  [i*4]), &(light[i].ambient), 4 * sizeof(GLfloat));
+		memcpy(&(lights_diffuse  [i*4]), &(light[i].diffuse), 4 * sizeof(GLfloat));
+		memcpy(&(lights_specular [i*4]), &(light[i].specular),4 * sizeof(GLfloat));
+		memcpy(&(lights_position [i*4]), &(light[i].position),4 * sizeof(GLfloat));
+ 	}
+
+	glUniform4fv(uniform_light_ambient,  num_lights, lights_ambient);
+	glUniform4fv(uniform_light_diffuse,  num_lights, lights_diffuse); 
+	glUniform4fv(uniform_light_specular, num_lights, lights_specular); 
+	glUniform4fv(uniform_light_position, num_lights, lights_position);  
+
+
+	GLint uniform_refl_ambient  = glGetUniformLocation(shader_program, "Ka");
+	GLint uniform_refl_diffuse  = glGetUniformLocation(shader_program, "Kd");
+	GLint uniform_refl_specular = glGetUniformLocation(shader_program, "Ks");
+	if(uniform_refl_ambient == -1 || uniform_refl_specular == -1 || 
+	   uniform_refl_diffuse == -1) {
+		fprintf(stderr, "Could not bind uniforms for lighting\n");
+		exit(-1);
+	}
+
+	GLfloat refl_ambient [4 * num_lights];
+	GLfloat refl_diffuse [4 * num_lights];
+	GLfloat refl_specular[4 * num_lights];
+	for(int i=0; i < num_lights; i++) {
+		refl_ambient[i*4 + 0]  = light[i].ambient[0]  * REFL_FACTOR_AMBIENT;
+		refl_ambient[i*4 + 1]  = light[i].ambient[1]  * REFL_FACTOR_AMBIENT;
+		refl_ambient[i*4 + 2]  = light[i].ambient[2]  * REFL_FACTOR_AMBIENT;
+		refl_ambient[i*4 + 3]  = 1.0;
+
+		refl_diffuse[i*4 + 0]  = light[i].diffuse[0]  * REFL_FACTOR_DIFFUSE;
+		refl_diffuse[i*4 + 1]  = light[i].diffuse[1]  * REFL_FACTOR_DIFFUSE;
+		refl_diffuse[i*4 + 2]  = light[i].diffuse[2]  * REFL_FACTOR_DIFFUSE;
+		refl_diffuse[i*4 + 3]  = 1.0;
+
+		refl_specular[i*4 + 0] = light[i].specular[0] * REFL_FACTOR_SPECULAR;
+		refl_specular[i*4 + 1] = light[i].specular[1] * REFL_FACTOR_SPECULAR;
+		refl_specular[i*4 + 2] = light[i].specular[2] * REFL_FACTOR_SPECULAR;
+		refl_specular[i*4 + 3] = 1.0;
+ 	}
+
+	glUniform4fv(uniform_refl_ambient,  num_lights, refl_ambient);
+	glUniform4fv(uniform_refl_diffuse,  num_lights, refl_diffuse); 
+	glUniform4fv(uniform_refl_specular, num_lights, refl_specular); 
+
+
 	/* Issue draw command, using indexed triangle list */
 	if(object->vertx_per_vectr == 2)
 		glDrawElements(GL_LINES, size/sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
@@ -97,9 +158,9 @@ void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLui
 *
 * draws n objects
 *******************************************************************/
-void draw_n(object_gl **objects, int n, float *proj_matrix, float *view_matrix, GLuint shader_program){
+void draw_n(object_gl **objects, int n, float *proj_matrix, float *view_matrix, GLuint shader_program, lightsource *light, int num_lights){
 	for(int i=0; i < n; i++)
-		draw_single(objects[i], proj_matrix, view_matrix, shader_program);
+		draw_single(objects[i], proj_matrix, view_matrix, shader_program, light, num_lights);
 }
 
 /******************************************************************

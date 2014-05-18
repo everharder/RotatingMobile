@@ -63,29 +63,16 @@
 #define NUM_WALLS		3
 
 //Lighting
-#define LIGHT0_POSITION		{  0.0,  0.0, 20.0,  0.0 }
+#define LIGHT0_POSITION		{  0.0,  0.0, 10.0,  1.0 }
 #define LIGHT0_SPECULAR		{  1.0,  1.0,  1.0,  1.0 }
-#define LIGHT0_AMBIENT		{  1.0,  1.0,  1.0,  1.0 }
-#define LIGHT0_DIFFUSE		{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT0_AMBIENT		{  0.8,  0.2,  0.0,  1.0 }
+#define LIGHT0_DIFFUSE		{  0.2,  0.2,  0.2,  1.0 }
 
-#define LIGHT1_POSITION		{ 15.0, 15.0,  0.0,  0.0 }
+#define LIGHT1_POSITION		{ 15.0, 15.0,  0.0,  1.0 }
 #define LIGHT1_SPECULAR		{  1.0,  1.0,  1.0,  1.0 }
-#define LIGHT1_AMBIENT		{  1.0,  1.0,  1.0,  1.0 }
-#define LIGHT1_DIFFUSE		{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT1_AMBIENT		{  0.5,  0.5,  0.5,  1.0 }
+#define LIGHT1_DIFFUSE		{  0.2,  0.2,  0.2,  1.0 }
 
-
-/******************************************************************
-* structs
-******************************************************************/
-typedef struct lightsource {
-	//reflection
-	GLfloat ambient[4];
-	GLfloat diffuse[4];
-	GLfloat specular[4];
-
-	//position
-	GLfloat position[4];
-} lightsource;
 
 /******************************************************************
 * globals
@@ -107,7 +94,8 @@ lightsource light[NUM_LIGHT];
 * draw mobile
 *******************************************************************/
 void draw_mobile(node_object node){
-	draw_single(&(node.obj), proj_matrix, view_matrix, shader_program);
+	draw_single(&(node.obj), proj_matrix, view_matrix, shader_program, light, NUM_LIGHT);
+	//draw_single(&(node.obj), proj_matrix, view_matrix, shader_program, light, 1);
 
 	if(node.child_l != NULL)
 		draw_mobile(*(node.child_l));
@@ -118,13 +106,15 @@ void draw_mobile(node_object node){
 
 /******************************************************************
 * display
+
 *******************************************************************/
 void display(){
 	//clear screen
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//draw walls
-	draw_n(walls, NUM_WALLS, proj_matrix, view_matrix, shader_program);
+	draw_n(walls, NUM_WALLS, proj_matrix, view_matrix, shader_program, light, NUM_LIGHT);
+	//draw_n(walls, NUM_WALLS, proj_matrix, view_matrix, shader_program, light, 1);
 
 	//draw actual objects
 	draw_mobile(*root);
@@ -292,13 +282,13 @@ void init_objects() {
 
 void init_lights() {
 	GLfloat light0_ambient[]  = LIGHT0_AMBIENT;
-	memcpy( light0_ambient, light[0].ambient, 4 * sizeof(GLfloat));
+	memcpy( light[0].ambient,  light0_ambient,  4 * sizeof(GLfloat));
 	GLfloat light0_diffuse[]  = LIGHT0_DIFFUSE;
-	memcpy( light0_diffuse, light[0].diffuse, 4 * sizeof(GLfloat));
+	memcpy( light[0].diffuse,  light0_diffuse,  4 * sizeof(GLfloat));
 	GLfloat light0_specular[] = LIGHT0_SPECULAR;
-	memcpy( light0_specular,light[0].specular,4 * sizeof(GLfloat));
+	memcpy( light[0].specular, light0_specular, 4 * sizeof(GLfloat));
 	GLfloat light0_position[] = LIGHT0_POSITION;
-	memcpy( light0_position,light[0].position,4 * sizeof(GLfloat));
+	memcpy( light[0].position, light0_position, 4 * sizeof(GLfloat));
 
 	// Assign created components to GL_LIGHT0
 	glLightfv(GL_LIGHT0, GL_AMBIENT,  light[0].ambient);
@@ -307,13 +297,13 @@ void init_lights() {
 	glLightfv(GL_LIGHT0, GL_POSITION, light[0].position);
 
 	GLfloat light1_ambient[]  = LIGHT1_AMBIENT;
-	memcpy( light1_ambient, light[1].ambient, 4 * sizeof(GLfloat));
+	memcpy( light[1].ambient,  light1_ambient,  4 * sizeof(GLfloat));
 	GLfloat light1_diffuse[]  = LIGHT1_DIFFUSE;
-	memcpy( light1_diffuse, light[1].diffuse, 4 * sizeof(GLfloat));
+	memcpy( light[1].diffuse,  light1_diffuse,  4 * sizeof(GLfloat));
 	GLfloat light1_specular[] = LIGHT1_SPECULAR;
-	memcpy( light1_specular,light[1].specular,4 * sizeof(GLfloat));
+	memcpy( light[1].specular, light1_specular, 4 * sizeof(GLfloat));
 	GLfloat light1_position[] = LIGHT1_POSITION;
-	memcpy( light1_position,light[1].position,4 * sizeof(GLfloat));
+	memcpy( light[1].position, light1_position, 4 * sizeof(GLfloat));
 
 	// Assign created components to GL_LIGHT0
 	glLightfv(GL_LIGHT1, GL_AMBIENT,  light[1].ambient);

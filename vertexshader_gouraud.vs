@@ -50,12 +50,19 @@ void main()
 		phongTerm = cosAngIncidence != 0.0 ? phongTerm : 0.0;
 		phongTerm = pow(phongTerm, specular_exponent);
 
-		if(flag_ambient)
+		if(flag_ambient == 1) {
 			interpColor = interpColor + La[i] * Ka[i];
-		if(flag_diffuse)
+		}
+		if(flag_diffuse == 1) {
 			interpColor = interpColor + Ld[i] * Kd[i] * cosAngIncidence;
-		if(flag_specular)
+		}
+		if(flag_specular == 1) {
 			interpColor = interpColor + Li[i] * Ks[i] * phongTerm;
+		}
+
+		//interpColor = interpColor + La[i] * Ka[i];
+		//interpColor = interpColor + Ld[i] * Kd[i] * cosAngIncidence;
+		//interpColor = interpColor + Li[i] * Ks[i] * phongTerm;
 	}
 
 	outColor = interpColor * vec4(Color.x, Color.y, Color.z, 1.0);

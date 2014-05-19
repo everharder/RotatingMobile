@@ -32,7 +32,7 @@ void main()
 	float cosAngIncidence;	
 	float phongTerm;
 
-	vec4 viewDirection = normalize(inverse(ViewMatrix) * vec4(0.0, 0.0, 0.0, 1.0) - vertexPosition);
+	vec4 viewDirection = normalize(inverse(ViewMatrix) * (vec4(0.0, 0.0, 0.0, 1.0) - vertexPosition));
 
 	for(int i=0; i < 2; i++) {
 		lightDirection = normalize(Lp[i] - vertexPosition);
@@ -45,11 +45,11 @@ void main()
 		phongTerm = cosAngIncidence != 0.0 ? phongTerm : 0.0;
 		phongTerm = pow(phongTerm, specular_exponent);
 
-		if(flag_ambient)
+		if(flag_ambient == 1)
 			interpColor = interpColor + La[i] * Ka[i];
-		if(flag_diffuse)
+		if(flag_diffuse == 1)
 			interpColor = interpColor + Ld[i] * Kd[i] * cosAngIncidence;
-		if(flag_specular)
+		if(flag_specular == 1)
 			interpColor = interpColor + Li[i] * Ks[i] * phongTerm;
 	}
 

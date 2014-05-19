@@ -93,29 +93,30 @@ void RGBtoHSV(GLfloat rgb[4], GLfloat hsv[4]){
 	r = rgb[0];
 	g = rgb[1];
 	b = rgb[2];
+
+	printf("rgb %f %f %f\n",r,g,b);
 	min = fmin(fmin(r, g), b);
 	max = fmax(fmax(r, g), b);
-	hsv[2] = max;				// v
 	delta = max - min;
 
-	if(max == 0){
+	if (max == min)
+		hsv[0] = 0;
+	else if (max == r)
+		hsv[0] = 60.0 * (g - b) / delta;	// between yellow & magenta
+	else if(max == g)
+		hsv[0] = 60.0 * (2.0 + (b - r) / delta);	// between cyan & yellow
+	else
+		hsv[0] = 60.0 * (4.0 + (r - g) / delta);	// between magenta & cyan
+
+	if(hsv[0] < 0)	hsv[0] += 360.0;
+
+	if(max == 0)
 		// r = g = b = 0		
 		hsv[1] = 0;			// s = 0
-		hsv[0] = -1;			// h is undefined
-	}
-	else{
+	else
 		hsv[1] = delta / max;		// s
 
-		if(r == max)
-			hsv[0] = 60 * (g - b) / delta;	// between yellow & magenta
-		else if( g == max )
-			hsv[0] = 60 * (2 + (b - r) / delta);	// between cyan & yellow
-		else
-			hsv[0] = 60 * (4 + (r - g) / delta);	// between magenta & cyan
-		
-		if(hsv[0] < 0)	hsv[0] += 360;
-	}
-
+	hsv[2] = max;				// v
 	hsv[3] = rgb[3];
 }
 

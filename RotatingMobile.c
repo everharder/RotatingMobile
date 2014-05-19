@@ -49,13 +49,13 @@
 #define BTN_LEFT		'a'
 #define BTN_RIGHT		'd'
 #define BTN_TGL_SHADING		'0'
-#define BTN_TGL_AMBIENT		'1'
-#define BTN_TGL_DIFFUSE		'2'
-#define BTN_TGL_SPECULAR	'3'
-#define BTN_HUE_UP		72
-#define BTN_HUE_DOWN		80
-#define BTN_VALUE_UP		75
-#define BTN_VALUE_DOWN		77
+#define BTN_TGL_AMBIENT		'f'
+#define BTN_TGL_DIFFUSE		'g'
+#define BTN_TGL_SPECULAR	'h'
+#define BTN_HUE_UP		'v'
+#define BTN_HUE_DOWN		'b'
+#define BTN_VALUE_UP		'm'
+#define BTN_VALUE_DOWN		'n'
 
 
 //Shaders
@@ -67,14 +67,14 @@
 #define PHONG_SHADER_CONST	1
 #define INIT_SHADER_CONST	PHONG_SHADER_CONST
 
-#define NUM_LIGHT		1
+#define NUM_LIGHT		2
 #define NUM_WALLS		3
 
 //Lighting
 #define LIGHT0_POSITION		{ 10.0, 10.0,  0.0,  1.0 }
 #define LIGHT0_INTENSITY	{  1.0,  1.0,  1.0,  1.0 }
 #define LIGHT0_SPECULAR		{  1.0,  1.0,  1.0,  1.0 }
-#define LIGHT0_AMBIENT		{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT0_AMBIENT		{  1.0,  0.0,  0.0,  1.0 }
 #define LIGHT0_DIFFUSE		{  1.0,  1.0,  1.0,  1.0 }
 
 #define LIGHT1_POSITION		{-10.0,  0.0, 10.0,  1.0 }
@@ -87,9 +87,7 @@
 /******************************************************************
 * globals
 *******************************************************************/
-GLuint shader_program_main;
-GLuint shader_program_gouraud;
-GLuint shader_program_phong;
+GLuint shader_program[2];
 static const char* VertexShaderString;
 static const char* FragmentShaderString;		
 short shader_idx = INIT_SHADER_CONST;
@@ -106,7 +104,7 @@ lightsource light[NUM_LIGHT];
 * draw mobile
 *******************************************************************/
 void draw_mobile(node_object node){
-	draw_single(&(node.obj), proj_matrix, view_matrix, shader_program_main, light, NUM_LIGHT);
+	draw_single(&(node.obj), proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
 	//draw_single(&(node.obj), proj_matrix, view_matrix, shader_program, light, 1);
 
 	if(node.child_l != NULL)
@@ -125,7 +123,7 @@ void display(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//draw walls
-	draw_n(walls, NUM_WALLS, proj_matrix, view_matrix, shader_program_main, light, NUM_LIGHT);
+	draw_n(walls, NUM_WALLS, proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
 
 	//draw actual objects
 	draw_mobile(*root);
@@ -172,7 +170,7 @@ void rotate_mobile(node_object *node) {
 *******************************************************************/
 void on_idle(){
 	rotate_mobile(root);
-	glutPostRedisplay();
+	display();
 }
 
 /******************************************************************
@@ -259,12 +257,10 @@ GLint create_shader_program(char *vertx_shader, char *fragm_shader){
 *******************************************************************/
 void init_shaders(void){
 	/* Setup shaders and shader program */
-	shader_program_gouraud = create_shader_program(GOURAUD_VS, GOURAUD_FS);
-	shader_program_phong = create_shader_program(PHONG_VS, PHONG_FS);
-	/* Init with phong shaders */	
-	shader_program_main = shader_program_phong;
+	shader_program[GOURAUD_SHADER_CONST] = create_shader_program(GOURAUD_VS, GOURAUD_FS);
+	shader_program[PHONG_SHADER_CONST]   = create_shader_program(PHONG_VS, PHONG_FS);
 	/* Put linked shader program into drawing pipeline */
-	glUseProgram(shader_program_main);
+	glUseProgram(shader_program[shader_idx]);
 }
 
 /******************************************************************
@@ -376,14 +372,14 @@ void initialize(void){
 	/* Init Lighting */
 	init_lights();
 
-	/* Init shaders and setup shader program */
-	init_shaders();
-
 	/* Set projection transform */
 	SetPerspectiveMatrix(FOVY, ASPECT, NEAR_PLANE, FAR_PLANE, proj_matrix);
 
 	/* Set viewing transform */
 	SetTranslation(0.0, 0.0, -1 * CAMERA_DIST, view_matrix);
+
+	/* Init shaders and setup shader program */
+	init_shaders();
 }
 
 /******************************************************************
@@ -407,12 +403,9 @@ void mouse_input(int button, int state, int x, int y){
 void key_input(unsigned char key, int x, int y){
 	float rotation[16];
 	float translte[16];
-	GLfloat hsv[4];
+	GLfloat hsv[4] = {0.0,0.0,0.0,1.0};
 	
 	printf("KEY  @ x:%d y:%d key:%c\n",x,y,key);		
-
-	if(key != BTN_UP && key != BTN_DOWN && key != BTN_LEFT && key != BTN_RIGHT)
-		return;
 
 	SetTranslation(0.0, 0.0, CAMERA_DIST, translte);
 	MultiplyMatrix(translte, view_matrix, view_matrix);
@@ -432,54 +425,63 @@ void key_input(unsigned char key, int x, int y){
 					break;
 		case BTN_TGL_SHADING:	if (shader_idx == GOURAUD_SHADER_CONST){
 						shader_idx = PHONG_SHADER_CONST;
-						shader_program_main = shader_program_phong;
-					}
-					else{
+					}else{
 						shader_idx = GOURAUD_SHADER_CONST;
-						shader_program_main = shader_program_gouraud;
 					}
-					glUseProgram(shader_program_main);
+					glUseProgram(shader_program[shader_idx]);
 					break;
-		case BTN_HUE_UP:	RGBtoHSV(light[0].intensity, hsv);
+		case BTN_HUE_UP:	RGBtoHSV(light[0].ambient, hsv);
 					hsv[0] += 2.0f;
+					printf("hue: %f sat: %f val: %f\n", hsv[0], hsv[1], hsv[2]);
 					if (hsv[0] > 360.0f) hsv[0] = 360.0f;
-					HSVtoRGB(hsv, light[0].intensity);
+					HSVtoRGB(hsv, light[0].ambient);
+					printf("r: %f g: %f b: %f\n", light[0].ambient[0], light[0].ambient[1], light[0].ambient[2]);
 					break;
-		case BTN_HUE_DOWN:	RGBtoHSV(light[0].intensity, hsv);
+		case BTN_HUE_DOWN:	RGBtoHSV(light[0].ambient, hsv);
 					hsv[0] -= 2.0f;
+					printf("hue: %f sat: %f val: %f\n", hsv[0], hsv[1], hsv[2]);
 					if (hsv[0] < 0.0f) hsv[0] = 0.0f;
-					HSVtoRGB(hsv, light[0].intensity);
+					HSVtoRGB(hsv, light[0].ambient);
+					printf("r: %f g: %f b: %f\n", light[0].ambient[0], light[0].ambient[1], light[0].ambient[2]);
 					break;
-		case BTN_VALUE_UP:	RGBtoHSV(light[0].intensity, hsv);
+		case BTN_VALUE_UP:	RGBtoHSV(light[0].ambient, hsv);
 					hsv[2] += 0.02f;
+					printf("hue: %f sat: %f val: %f\n", hsv[0], hsv[1], hsv[2]);
 					if (hsv[2] > 1.0f) hsv[2] = 1.0f;
-					HSVtoRGB(hsv, light[0].intensity);
+					HSVtoRGB(hsv, light[0].ambient);
 					break;
-		case BTN_VALUE_DOWN:	RGBtoHSV(light[0].intensity, hsv);
+		case BTN_VALUE_DOWN:	RGBtoHSV(light[0].ambient, hsv);
 					hsv[2] -= 0.02f;
+					printf("hue: %f sat: %f val: %f\n", hsv[0], hsv[1], hsv[2]);
 					if (hsv[2] < 0.0f) hsv[2] = 0.0f;
-					HSVtoRGB(hsv, light[0].intensity);
+					HSVtoRGB(hsv, light[0].ambient);
 					break;
 		case BTN_TGL_AMBIENT:	if(light[0].flag_ambient || light[1].flag_ambient) {
+						printf("ambient lighting off\n");
 						light[0].flag_ambient = 0;
 						light[1].flag_ambient = 0;
 					} else {
+						printf("ambient lighting on\n");
 						light[0].flag_ambient = 1;
 						light[1].flag_ambient = 1;
 					}
 					break;
 		case BTN_TGL_DIFFUSE:	if(light[0].flag_diffuse || light[1].flag_diffuse) {
+						printf("diffuse lighting off\n");
 						light[0].flag_diffuse = 0;
 						light[1].flag_diffuse = 0;
 					} else {
+						printf("diffuse lighting on\n");
 						light[0].flag_diffuse = 1;
 						light[1].flag_diffuse = 1;
 					}
 					break;
 		case BTN_TGL_SPECULAR:	if(light[0].flag_specular || light[1].flag_specular) {
+						printf("specular lighting off\n");
 						light[0].flag_specular = 0;
 						light[1].flag_specular = 0;
 					} else {
+						printf("specular lighting on\n");
 						light[0].flag_specular = 1;
 						light[1].flag_specular = 1;
 					}

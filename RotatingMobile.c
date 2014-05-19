@@ -49,9 +49,9 @@
 #define BTN_LEFT		'a'
 #define BTN_RIGHT		'd'
 #define BTN_TGL_SHADING		'0'
-#define BTN_TGL_AMBIENT		'1'
-#define BTN_TGL_DIFFUSE		'2'
-#define BTN_TGL_SPECULAR	'3'
+#define BTN_TGL_AMBIENT		'f'
+#define BTN_TGL_DIFFUSE		'g'
+#define BTN_TGL_SPECULAR	'h'
 #define BTN_HUE_UP		72
 #define BTN_HUE_DOWN		80
 #define BTN_VALUE_UP		75
@@ -65,7 +65,7 @@
 #define PHONG_VS		"vertexshader_phong.vs"
 #define PHONG_FS		"fragmentshader_phong.fs"
 #define PHONG_SHADER_CONST	1
-#define INIT_SHADER_CONST	PHONG_SHADER_CONST
+#define INIT_SHADER_CONST	GOURAUD_SHADER_CONST
 
 #define NUM_LIGHT		1
 #define NUM_WALLS		3
@@ -400,9 +400,6 @@ void key_input(unsigned char key, int x, int y){
 	
 	printf("KEY  @ x:%d y:%d key:%c\n",x,y,key);		
 
-	if(key != BTN_UP && key != BTN_DOWN && key != BTN_LEFT && key != BTN_RIGHT)
-		return;
-
 	SetTranslation(0.0, 0.0, CAMERA_DIST, translte);
 	MultiplyMatrix(translte, view_matrix, view_matrix);
 
@@ -440,25 +437,31 @@ void key_input(unsigned char key, int x, int y){
 					HSVtoRGB(hsv, light[0].intensity);
 					break;
 		case BTN_TGL_AMBIENT:	if(light[0].flag_ambient || light[1].flag_ambient) {
+						printf("ambient lighting off\n");
 						light[0].flag_ambient = 0;
 						light[1].flag_ambient = 0;
 					} else {
+						printf("ambient lighting on\n");
 						light[0].flag_ambient = 1;
 						light[1].flag_ambient = 1;
 					}
 					break;
 		case BTN_TGL_DIFFUSE:	if(light[0].flag_diffuse || light[1].flag_diffuse) {
+						printf("diffuse lighting off\n");
 						light[0].flag_diffuse = 0;
 						light[1].flag_diffuse = 0;
 					} else {
+						printf("diffuse lighting on\n");
 						light[0].flag_diffuse = 1;
 						light[1].flag_diffuse = 1;
 					}
 					break;
 		case BTN_TGL_SPECULAR:	if(light[0].flag_specular || light[1].flag_specular) {
+						printf("specular lighting off\n");
 						light[0].flag_specular = 0;
 						light[1].flag_specular = 0;
 					} else {
+						printf("specular lighting on\n");
 						light[0].flag_specular = 1;
 						light[1].flag_specular = 1;
 					}

@@ -86,6 +86,7 @@ void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLui
 	GLint uniform_flag_ambient  = glGetUniformLocation(shader_program, "flag_ambient");
 	GLint uniform_flag_diffuse  = glGetUniformLocation(shader_program, "flag_diffuse");
 	GLint uniform_flag_specular = glGetUniformLocation(shader_program, "flag_specular");
+
 	glUniform1i(uniform_flag_ambient,  light[0].flag_ambient);
 	glUniform1i(uniform_flag_diffuse,  light[0].flag_diffuse);
 	glUniform1i(uniform_flag_specular, light[0].flag_specular);

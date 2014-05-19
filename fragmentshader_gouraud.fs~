@@ -5,5 +5,5 @@ out vec4 outputColor;
 
 void main()
 {
-    outputColor = outColor;
+    outputColor = interpColor;
 }

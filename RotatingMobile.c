@@ -62,23 +62,35 @@
 #define PHONG_VS		"vertexshader_phong.vs"
 #define PHONG_FS		"fragmentshader_phong.fs"
 #define PHONG_SHADER_CONST	1
-#define INIT_SHADER_CONST	GOURAUD_SHADER_CONST
+#define INIT_SHADER_CONST	PHONG_SHADER_CONST
 
-#define NUM_LIGHT		2
+#define NUM_LIGHT		1
 #define NUM_WALLS		3
 
 //Lighting
-#define LIGHT0_POSITION		{  0.0,  0.0, 20.0,  1.0 }
-#define LIGHT0_INTENSITY	{  1.0,  0.0,  0.0,  1.0 }
+/*#define LIGHT0_POSITION	{  0.0, 20.0, 20.0,  1.0 }
+#define LIGHT0_INTENSITY	{  1.0,  1.0,  1.0,  1.0 }
 #define LIGHT0_SPECULAR		{  1.0,  1.0,  1.0,  1.0 }
-#define LIGHT0_AMBIENT		{  0.7,  0.7,  0.7,  1.0 }
-#define LIGHT0_DIFFUSE		{  0.2,  0.2,  0.2,  1.0 }
+#define LIGHT0_AMBIENT		{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT0_DIFFUSE		{  1.0,  1.0,  1.0,  1.0 }
 
 #define LIGHT1_POSITION		{ 20.0, 20.0,  0.0,  1.0 }
-#define LIGHT1_INTENSITY	{  0.0,  1.0,  0.0,  1.0 }
+#define LIGHT1_INTENSITY	{  1.0,  1.0,  1.0,  1.0 }
 #define LIGHT1_SPECULAR		{  1.0,  1.0,  1.0,  1.0 }
-#define LIGHT1_AMBIENT		{  0.0,  0.0,  0.0,  1.0 }
-#define LIGHT1_DIFFUSE		{  0.2,  0.2,  0.2,  1.0 }
+#define LIGHT1_AMBIENT		{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT1_DIFFUSE		{  1.0,  1.0,  1.0,  1.0 }*/
+
+#define LIGHT0_POSITION		{ 10.0, 10.0,  0.0,  1.0 }
+#define LIGHT0_INTENSITY	{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT0_SPECULAR		{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT0_AMBIENT		{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT0_DIFFUSE		{  1.0,  1.0,  1.0,  1.0 }
+
+#define LIGHT1_POSITION		{-10.0,  0.0, 10.0,  1.0 }
+#define LIGHT1_INTENSITY	{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT1_SPECULAR		{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT1_AMBIENT		{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT1_DIFFUSE		{  1.0,  1.0,  1.0,  1.0 }
 
 
 /******************************************************************
@@ -121,7 +133,6 @@ void display(){
 
 	//draw walls
 	draw_n(walls, NUM_WALLS, proj_matrix, view_matrix, shader_program, light, NUM_LIGHT);
-	//draw_n(walls, NUM_WALLS, proj_matrix, view_matrix, shader_program, light, 1);
 
 	//draw actual objects
 	draw_mobile(*root);
@@ -277,9 +288,9 @@ void init_objects() {
 	}
 
 	// Walls
-	walls[0] = create_wallXY(-20.0,-20.0,-20.0, 20.0, 20.0,-20.0, 7.0, 7.0, 0.0);
-	walls[1] = create_wallXZ(-20.0,-20.0,-20.0, 20.0,-20.0, 20.0, 7.0, 7.0, 0.0);
-	walls[2] = create_wallYZ(-20.0,-20.0,-20.0,-20.0, 20.0, 20.0, 7.0, 7.0, 0.0);
+	walls[0] = create_wallXY(-20.0,-20.0,-20.0, 20.0, 20.0,-20.0, 0.3, 0.3, 0.3);
+	walls[1] = create_wallXZ(-20.0,-20.0,-20.0, 20.0,-20.0, 20.0, 0.3, 0.3, 0.3);
+	walls[2] = create_wallYZ(-20.0,-20.0,-20.0,-20.0, 20.0, 20.0, 0.3, 0.3, 0.3);
 
 	if(walls[0] == NULL || walls[1] == NULL || walls[2] == NULL){
 		printf("error creating grids...\n");
@@ -291,8 +302,8 @@ void init_objects() {
 * init lights
 *******************************************************************/
 void init_lights() {
-	GLfloat light0_intensity[]  = LIGHT0_INTENSITY;
-	memcpy( light[0].intensity,  light0_intensity,  4 * sizeof(GLfloat));
+	GLfloat light0_intensity[]= LIGHT0_INTENSITY;
+	memcpy( light[0].intensity,light0_intensity,4 * sizeof(GLfloat));
 	GLfloat light0_ambient[]  = LIGHT0_AMBIENT;
 	memcpy( light[0].ambient,  light0_ambient,  4 * sizeof(GLfloat));
 	GLfloat light0_diffuse[]  = LIGHT0_DIFFUSE;
@@ -409,7 +420,7 @@ void key_input(unsigned char key, int x, int y){
 		case BTN_DOWN:		SetRotationX(360 - CAMERA_ROTATE_ANGLE, rotation); 
 					MultiplyMatrix(rotation, view_matrix, view_matrix); 
 					break;
-		case BTN_TGL_SHADING:	if(shader_idx == GOURAUD_SHADER_CONST) {
+		case BTN_TGL_SHADING:	if(shader_idx == GOURAUD_SHADER_CONST) { 
 						shader_idx = PHONG_SHADER_CONST;
 						create_shader_program(PHONG_VS, PHONG_FS);
 					} else {

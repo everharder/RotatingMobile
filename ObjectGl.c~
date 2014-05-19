@@ -103,10 +103,9 @@ void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLui
 		memcpy(&(lights_diffuse  [i*4]), &(light[i].diffuse),   4 * sizeof(GLfloat));
  	}  
 
-	glUniform4fv(uniform_light_intensity,num_lights, lights_intensity);
+	glUniform4fv(uniform_light_intensity,  num_lights, lights_intensity);
 	glUniform4fv(uniform_light_ambient,  num_lights, lights_ambient);
-	glUniform4fv(uniform_light_position, num_lights, lights_position);
-	glUniform4fv(uniform_light_diffuse,  num_lights, lights_diffuse);    
+	glUniform4fv(uniform_light_position, num_lights, lights_position);  
 
 
 	GLint uniform_refl_ambient  = glGetUniformLocation(shader_program, "Ka");

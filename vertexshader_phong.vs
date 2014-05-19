@@ -1,33 +1,23 @@
 #version 330
 
+layout (location = 0) in vec3 Position;
+layout (location = 1) in vec3 Normal;
+layout (location = 2) in vec3 Color;
+
 uniform mat4 ProjectionMatrix;
 uniform mat4 ViewMatrix;
 uniform mat4 ModelMatrix;
 
-//uniform int lightCount;
-//uniform vec3 lightPosition[5];
-//uniform vec4 lightIntensity[5];
-//uniform vec4 ambientIntensity[5];
-
-//uniform vec4 diffuseColor;
-//uniform float shininessFactor;
-
-//uniform bool ambient;
-//uniform bool diffuse;
-//uniform bool specular;
-//uniform bool visualizeLight;
-
-//uniform vec4 lightModelColor;
-
-layout (location = 0) in vec3 Position;
-layout (location = 1) in vec3 Normal;
-
-out vec3 normalDirection;
 out vec4 vertexPosition;
+out vec4 vertexColor;
+out vec4 viewDirection;
+out vec4 normalDirection;
 
 void main()
 {
-	vec4 vertexPosition = ModelMatrix * vec4(Position, 1.0);
+	vertexPosition = ModelMatrix * vec4(Position, 1.0);
+	normalDirection = normalize(ModelMatrix * vec4(Normal, 1.0));
+
 	gl_Position = ProjectionMatrix*ViewMatrix*vertexPosition;
-	vec3 normalDirection = normalize(vec3(ModelMatrix * vec4(Normal, 0.0)));
+	vertexColor = vec4(Color.x, Color.y, Color.z, 1.0);
 }

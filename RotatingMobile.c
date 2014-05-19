@@ -96,7 +96,9 @@
 /******************************************************************
 * globals
 *******************************************************************/
-GLuint shader_program;
+GLuint shader_program_main;
+GLuint shader_program_gouraud;
+GLuint shader_program_phong;
 static const char* VertexShaderString;
 static const char* FragmentShaderString;		
 short shader_idx = INIT_SHADER_CONST;
@@ -113,7 +115,7 @@ lightsource light[NUM_LIGHT];
 * draw mobile
 *******************************************************************/
 void draw_mobile(node_object node){
-	draw_single(&(node.obj), proj_matrix, view_matrix, shader_program, light, NUM_LIGHT);
+	draw_single(&(node.obj), proj_matrix, view_matrix, shader_program_main, light, NUM_LIGHT);
 	//draw_single(&(node.obj), proj_matrix, view_matrix, shader_program, light, 1);
 
 	if(node.child_l != NULL)
@@ -132,7 +134,7 @@ void display(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//draw walls
-	draw_n(walls, NUM_WALLS, proj_matrix, view_matrix, shader_program, light, NUM_LIGHT);
+	draw_n(walls, NUM_WALLS, proj_matrix, view_matrix, shader_program_main, light, NUM_LIGHT);
 
 	//draw actual objects
 	draw_mobile(*root);
@@ -219,7 +221,7 @@ void add_shader(GLuint shader_program, const char* ShaderCode, GLenum ShaderType
 *******************************************************************/
 void create_shader_program(char *vertx_shader, char *fragm_shader){
 	/* Allocate shader object */
-	shader_program = glCreateProgram();
+	GLint shader_program = glCreateProgram();
 
 	if (shader_program == 0) {
 		fprintf(stderr, "Error creating shader program\n");
@@ -258,8 +260,20 @@ void create_shader_program(char *vertx_shader, char *fragm_shader){
 		exit(1);
 	}
 
+	return shader_program;
+}
+
+/******************************************************************
+* init shaders
+*******************************************************************/
+void init_shaders(void){
+	/* Setup shaders and shader program */
+	shader_program_gouraud = create_shader_program(GOURAUD_VS, GOURAUD_FS);
+	shader_program_phong = create_shader_program(PHONG_VS, PHONG_FS);
+	/* Init with phong shaders */	
+	shader_program_main = shader_program_phong;
 	/* Put linked shader program into drawing pipeline */
-	glUseProgram(shader_program);
+	glUseProgram(shader_program_main);
 }
 
 /******************************************************************
@@ -360,20 +374,17 @@ void initialize(void){
 	for(int i=0; i < NUM_WALLS; i++) 
 		init_object(walls[i]);
 
-	/* Setup shaders and shader program */
-	if(shader_idx == PHONG_SHADER_CONST)
-		create_shader_program(PHONG_VS, PHONG_FS);
-	else
-		create_shader_program(GOURAUD_VS, GOURAUD_FS);
+	/* Init Lighting */
+	init_lights();
+
+	/* Init shaders and setup shader program */
+	init_shaders();
 
 	/* Set projection transform */
 	SetPerspectiveMatrix(FOVY, ASPECT, NEAR_PLANE, FAR_PLANE, proj_matrix);
 
 	/* Set viewing transform */
 	SetTranslation(0.0, 0.0, -1 * CAMERA_DIST, view_matrix);
-
-	/* Init Lighting */
-	init_lights();
 }
 
 /******************************************************************
@@ -420,13 +431,15 @@ void key_input(unsigned char key, int x, int y){
 		case BTN_DOWN:		SetRotationX(360 - CAMERA_ROTATE_ANGLE, rotation); 
 					MultiplyMatrix(rotation, view_matrix, view_matrix); 
 					break;
-		case BTN_TGL_SHADING:	if(shader_idx == GOURAUD_SHADER_CONST) { 
+		case BTN_TGL_SHADING:	if (shader_idx == GOURAUD_SHADER_CONST){
 						shader_idx = PHONG_SHADER_CONST;
-						create_shader_program(PHONG_VS, PHONG_FS);
-					} else {
-						shader_idx = GOURAUD_SHADER_CONST;
-						create_shader_program(GOURAUD_VS, GOURAUD_FS);
+						shader_program_main = shader_program_phong;
 					}
+					else{
+						shader_idx = GOURAUD_SHADER_CONST;
+						shader_program_main = shader_program_gouraud;
+					}
+					glUseProgram(shader_program_main);
 					break;
 		case BTN_HUE_UP:	RGBtoHSV(light[0].intensity, hsv);
 					hsv[0] += 2.0f;
@@ -467,6 +480,7 @@ void free_memory(node_object *node){
 		free_memory(node->child_r);
 
 	free(node->obj.vertx_buffer_data);
+	free(node->obj.normal_buffer_data);
 	free(node->obj.color_buffer_data);
 	free(node->obj.index_buffer_data);
 	free(node);

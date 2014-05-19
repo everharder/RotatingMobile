@@ -12,7 +12,7 @@ uniform int flag_specular;
 uniform vec4 Li[2]; // light intensity
 uniform vec4 Lp[2]; // light position
 uniform vec4 La[2]; // light ambient
-uniform vec4 Ld[2]; 
+uniform vec4 Ld[2]; // light diffuse
   
 uniform vec4 Ks[2];
 uniform vec4 Kd[2];
@@ -46,11 +46,11 @@ void main()
 		phongTerm = pow(phongTerm, specular_exponent);
 
 		if(flag_ambient == 1)
-			interpColor = interpColor + La[i] * Ka[i];
+			interpColor += La[i] * Ka[i];
 		if(flag_diffuse == 1)
-			interpColor = interpColor + Ld[i] * Kd[i] * cosAngIncidence;
+			interpColor += Ld[i] * Kd[i] * cosAngIncidence;
 		if(flag_specular == 1)
-			interpColor = interpColor + Li[i] * Ks[i] * phongTerm;
+			interpColor += Li[i] * Ks[i] * phongTerm;
 	}
 
 	outColor = interpColor * vertexColor;

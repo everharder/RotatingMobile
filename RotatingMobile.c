@@ -268,8 +268,6 @@ void init_shaders(void){
 *******************************************************************/
 void init_object_mobile(node_object *node) {
 	init_object(&(node->obj));
-// Determine normals
-//	findNormals(&(node->obj));
 
 	if(node->child_l != NULL)
 		init_object_mobile(node->child_l);
@@ -425,8 +423,10 @@ void key_input(unsigned char key, int x, int y){
 					break;
 		case BTN_TGL_SHADING:	if (shader_idx == GOURAUD_SHADER_CONST){
 						shader_idx = PHONG_SHADER_CONST;
+						printf("phong shading on\n");
 					}else{
 						shader_idx = GOURAUD_SHADER_CONST;
+						printf("gouraud shading on\n");
 					}
 					glUseProgram(shader_program[shader_idx]);
 					break;
@@ -434,21 +434,25 @@ void key_input(unsigned char key, int x, int y){
 					hsv[0] += 2.0f;
 					if (hsv[0] > 360.0f) hsv[0] = 360.0f;
 					HSVtoRGB(hsv, light[0].ambient);
+					printf("hue up\n");
 					break;
 		case BTN_HUE_DOWN:	RGBtoHSV(light[0].ambient, hsv);
 					hsv[0] -= 2.0f;
 					if (hsv[0] < 0.0f) hsv[0] = 0.0f;
 					HSVtoRGB(hsv, light[0].ambient);
+					printf("hue down\n");
 					break;
 		case BTN_VALUE_UP:	RGBtoHSV(light[0].ambient, hsv);
 					hsv[2] += 0.02f;
 					if (hsv[2] > 1.0f) hsv[2] = 1.0f;
 					HSVtoRGB(hsv, light[0].ambient);
+					printf("value up\n");
 					break;
 		case BTN_VALUE_DOWN:	RGBtoHSV(light[0].ambient, hsv);
 					hsv[2] -= 0.02f;
 					if (hsv[2] < 0.0f) hsv[2] = 0.0f;
 					HSVtoRGB(hsv, light[0].ambient);
+					printf("value down\n");
 					break;
 		case BTN_TGL_AMBIENT:	if(light[0].flag_ambient || light[1].flag_ambient) {
 						printf("ambient lighting off\n");

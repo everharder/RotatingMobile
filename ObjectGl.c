@@ -83,6 +83,14 @@ void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLui
 	}
 	glUniformMatrix4fv(RotationUniform, 1, GL_TRUE, object->model_matrix);  
 
+	GLint uniform_flag_ambient  = glGetUniformLocation(shader_program, "flag_ambient");
+	GLint uniform_flag_diffuse  = glGetUniformLocation(shader_program, "flag_diffuse");
+	GLint uniform_flag_specular = glGetUniformLocation(shader_program, "flag_specular");
+	glUniform1i(uniform_flag_ambient,  light[0].flag_ambient);
+	glUniform1i(uniform_flag_diffuse,  light[0].flag_diffuse);
+	glUniform1i(uniform_flag_specular, light[0].flag_specular);
+
+
 	GLint uniform_light_intensity = glGetUniformLocation(shader_program, "Li");
 	GLint uniform_light_ambient   = glGetUniformLocation(shader_program, "La");
 	GLint uniform_light_position  = glGetUniformLocation(shader_program, "Lp");

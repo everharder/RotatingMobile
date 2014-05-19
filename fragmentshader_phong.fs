@@ -5,7 +5,10 @@ in vec4 vertexColor;
 in vec4 normalDirection;
 
 
-//uniform int num_lights;
+uniform int flag_ambient;
+uniform int flag_diffuse;
+uniform int flag_specular;
+
 uniform vec4 Li[2]; // light intensity
 uniform vec4 Lp[2]; // light position
 uniform vec4 La[2]; // light ambient
@@ -42,9 +45,12 @@ void main()
 		phongTerm = cosAngIncidence != 0.0 ? phongTerm : 0.0;
 		phongTerm = pow(phongTerm, specular_exponent);
 
-		interpColor = interpColor + La[i] * Ka[i];
-		interpColor = interpColor + Ld[i] * Kd[i] * cosAngIncidence;
-		interpColor = interpColor + Li[i] * Ks[i] * phongTerm;
+		if(flag_ambient)
+			interpColor = interpColor + La[i] * Ka[i];
+		if(flag_diffuse)
+			interpColor = interpColor + Ld[i] * Kd[i] * cosAngIncidence;
+		if(flag_specular)
+			interpColor = interpColor + Li[i] * Ks[i] * phongTerm;
 	}
 
 	outColor = interpColor * vertexColor;

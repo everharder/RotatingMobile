@@ -4,15 +4,19 @@
 *	  	Stefan Haselwanter
 * date: 	07.04.2014   
 * version:	1.0
-* desc.:	draws and animates a simple rotating mobile
-		with the controls w, a, s, d the camera can be
-		moved and the rotation direction of the top 
-		wielding can be inverted by leftclick
+* desc.:	draws and animates a simple rotating mobile 
 
 		the code may contain fragments of the programming
-		example no. 2 from Matthias Harders.
+		example no. 2 from Prof. Matthias Harders.
  * controls: 	w,a,s,d ... move camera
 		0 	... toggle shading
+		f	... toggle ambient lighting LIGHT0
+		g	... toggle diffuse lighting LIGHT0
+		h	... toggle specular lighting LIGHT0
+		v	... increase hue of LIGHT0
+		b	... decrease hue of LIGHT0
+		n	... increase val of LIGHT0
+		m	... decrease val of LIGHT0
 *******************************************************************/
 
 #include <stdio.h>
@@ -105,7 +109,6 @@ lightsource light[NUM_LIGHT];
 *******************************************************************/
 void draw_mobile(node_object node){
 	draw_single(&(node.obj), proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
-	//draw_single(&(node.obj), proj_matrix, view_matrix, shader_program, light, 1);
 
 	if(node.child_l != NULL)
 		draw_mobile(*(node.child_l));
@@ -256,10 +259,9 @@ GLint create_shader_program(char *vertx_shader, char *fragm_shader){
 * init shaders
 *******************************************************************/
 void init_shaders(void){
-	/* Setup shaders and shader program */
 	shader_program[GOURAUD_SHADER_CONST] = create_shader_program(GOURAUD_VS, GOURAUD_FS);
 	shader_program[PHONG_SHADER_CONST]   = create_shader_program(PHONG_VS, PHONG_FS);
-	/* Put linked shader program into drawing pipeline */
+
 	glUseProgram(shader_program[shader_idx]);
 }
 
@@ -301,6 +303,7 @@ void init_objects() {
 * init lights
 *******************************************************************/
 void init_lights() {
+	//init first light
 	GLfloat light0_intensity[]= LIGHT0_INTENSITY;
 	memcpy( light[0].intensity,light0_intensity,4 * sizeof(GLfloat));
 	GLfloat light0_ambient[]  = LIGHT0_AMBIENT;
@@ -322,6 +325,7 @@ void init_lights() {
 	light[0].flag_diffuse  = 1;
 	light[0].flag_specular = 1;
 
+	//init second light
 	GLfloat light1_intensity[]  = LIGHT1_INTENSITY;
 	memcpy( light[1].intensity,  light1_intensity,  4 * sizeof(GLfloat));
 	GLfloat light1_ambient[]  = LIGHT1_AMBIENT;
@@ -333,7 +337,7 @@ void init_lights() {
 	GLfloat light1_position[] = LIGHT1_POSITION;
 	memcpy( light[1].position, light1_position, 4 * sizeof(GLfloat));
 
-	// Assign created components to GL_LIGHT0
+	// Assign created components to GL_LIGHT1
 	glLightfv(GL_LIGHT1, GL_AMBIENT,  light[1].ambient);
 	glLightfv(GL_LIGHT1, GL_DIFFUSE,  light[1].diffuse);
 	glLightfv(GL_LIGHT1, GL_SPECULAR, light[1].specular);
@@ -342,6 +346,8 @@ void init_lights() {
 	light[1].flag_ambient  = 1;
 	light[1].flag_diffuse  = 1;
 	light[1].flag_specular = 1;
+
+
 
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);

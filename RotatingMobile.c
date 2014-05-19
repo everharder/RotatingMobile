@@ -403,7 +403,7 @@ void mouse_input(int button, int state, int x, int y){
 void key_input(unsigned char key, int x, int y){
 	float rotation[16];
 	float translte[16];
-	GLfloat hsv[4] = {0.0,0.0,0.0,1.0};
+	GLfloat hsv[4] = {0.0, 1.0, 0.0, 1.0};
 	
 	printf("KEY  @ x:%d y:%d key:%c\n",x,y,key);		
 
@@ -432,27 +432,21 @@ void key_input(unsigned char key, int x, int y){
 					break;
 		case BTN_HUE_UP:	RGBtoHSV(light[0].ambient, hsv);
 					hsv[0] += 2.0f;
-					printf("hue: %f sat: %f val: %f\n", hsv[0], hsv[1], hsv[2]);
 					if (hsv[0] > 360.0f) hsv[0] = 360.0f;
 					HSVtoRGB(hsv, light[0].ambient);
-					printf("r: %f g: %f b: %f\n", light[0].ambient[0], light[0].ambient[1], light[0].ambient[2]);
 					break;
 		case BTN_HUE_DOWN:	RGBtoHSV(light[0].ambient, hsv);
 					hsv[0] -= 2.0f;
-					printf("hue: %f sat: %f val: %f\n", hsv[0], hsv[1], hsv[2]);
 					if (hsv[0] < 0.0f) hsv[0] = 0.0f;
 					HSVtoRGB(hsv, light[0].ambient);
-					printf("r: %f g: %f b: %f\n", light[0].ambient[0], light[0].ambient[1], light[0].ambient[2]);
 					break;
 		case BTN_VALUE_UP:	RGBtoHSV(light[0].ambient, hsv);
 					hsv[2] += 0.02f;
-					printf("hue: %f sat: %f val: %f\n", hsv[0], hsv[1], hsv[2]);
 					if (hsv[2] > 1.0f) hsv[2] = 1.0f;
 					HSVtoRGB(hsv, light[0].ambient);
 					break;
 		case BTN_VALUE_DOWN:	RGBtoHSV(light[0].ambient, hsv);
 					hsv[2] -= 0.02f;
-					printf("hue: %f sat: %f val: %f\n", hsv[0], hsv[1], hsv[2]);
 					if (hsv[2] < 0.0f) hsv[2] = 0.0f;
 					HSVtoRGB(hsv, light[0].ambient);
 					break;
@@ -533,7 +527,7 @@ int main(int argc, char** argv) {
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 	glutInitWindowSize(600, 600);
 	glutInitWindowPosition(400, 400);
-	glutCreateWindow("CG ProgrammingExercise 1 - Eberharter/Haselwanter");
+	glutCreateWindow("CG ProgrammingExercise 2 - Eberharter/Haselwanter");
 
 	//init glew
 	GLenum res = glewInit();

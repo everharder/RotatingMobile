@@ -65,7 +65,7 @@
 #define PHONG_VS		"vertexshader_phong.vs"
 #define PHONG_FS		"fragmentshader_phong.fs"
 #define PHONG_SHADER_CONST	1
-#define INIT_SHADER_CONST	PHONG_SHADER_CONST
+#define INIT_SHADER_CONST	GOURAUD_SHADER_CONST
 
 #define NUM_LIGHT		2
 #define NUM_WALLS		3

@@ -30,13 +30,15 @@ void RGBtoHSV(GLfloat rgb[4], GLfloat hsv[4]){
 
 	if(hsv[0] < 0)	hsv[0] += 360.0;
 
+/*
 	if(max == 0)
 		// r = g = b = 0		
 		hsv[1] = 0;			// s = 0
 	else
 		hsv[1] = delta / max;		// s
-
-	hsv[2] = max;				// v
+*/
+	hsv[1] = 1;		// fully saturation		
+	hsv[2] = max;		// v
 	hsv[3] = rgb[3];
 }
 
@@ -50,7 +52,7 @@ void HSVtoRGB(GLfloat hsv[4], GLfloat rgb[4]){
 	int i;
 
 	h = hsv[0];
-	s = hsv[1];
+	s = 1;		// fully saturation
 	v = hsv[2];
 
 	if(s == 0) {

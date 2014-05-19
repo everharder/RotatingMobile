@@ -36,10 +36,10 @@ void main()
 
 	for(int i=0; i < 2; i++) {
 		lightDirection = normalize(Lp[i] - vertexPosition);
-		cosAngIncidence = dot(normalDirection, lightDirection);
+		cosAngIncidence = dot(normalize(normalDirection), lightDirection);
 		cosAngIncidence = clamp(cosAngIncidence, 0, 1);
 
-		reflectDirection = reflect(-lightDirection, normalDirection);
+		reflectDirection = reflect(-lightDirection, normalize(normalDirection));
 		phongTerm = dot(viewDirection, reflectDirection);
 		phongTerm = clamp(phongTerm, 0, 1);
 		phongTerm = cosAngIncidence != 0.0 ? phongTerm : 0.0;

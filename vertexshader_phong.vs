@@ -16,7 +16,7 @@ out vec4 normalDirection;
 void main()
 {
 	vertexPosition = ModelMatrix * vec4(Position, 1.0);
-	normalDirection = normalize(ModelMatrix * vec4(Normal, 1.0));
+	normalDirection = ModelMatrix * vec4(Normal, 1.0);
 
 	gl_Position = ProjectionMatrix*ViewMatrix*vertexPosition;
 	vertexColor = vec4(Color.x, Color.y, Color.z, 1.0);

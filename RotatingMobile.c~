@@ -49,9 +49,6 @@
 #define BTN_LEFT		'a'
 #define BTN_RIGHT		'd'
 #define BTN_TGL_SHADING		'0'
-#define BTN_TGL_AMBIENT		'1'
-#define BTN_TGL_DIFFUSE		'2'
-#define BTN_TGL_SPECULAR	'3'
 #define BTN_HUE_UP		72
 #define BTN_HUE_DOWN		80
 #define BTN_VALUE_UP		75
@@ -67,10 +64,22 @@
 #define PHONG_SHADER_CONST	1
 #define INIT_SHADER_CONST	PHONG_SHADER_CONST
 
-#define NUM_LIGHT		1
+#define NUM_LIGHT		2
 #define NUM_WALLS		3
 
 //Lighting
+/*#define LIGHT0_POSITION	{  0.0, 20.0, 20.0,  1.0 }
+#define LIGHT0_INTENSITY	{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT0_SPECULAR		{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT0_AMBIENT		{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT0_DIFFUSE		{  1.0,  1.0,  1.0,  1.0 }
+
+#define LIGHT1_POSITION		{ 20.0, 20.0,  0.0,  1.0 }
+#define LIGHT1_INTENSITY	{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT1_SPECULAR		{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT1_AMBIENT		{  1.0,  1.0,  1.0,  1.0 }
+#define LIGHT1_DIFFUSE		{  1.0,  1.0,  1.0,  1.0 }*/
+
 #define LIGHT0_POSITION		{ 10.0, 10.0,  0.0,  1.0 }
 #define LIGHT0_INTENSITY	{  1.0,  1.0,  1.0,  1.0 }
 #define LIGHT0_SPECULAR		{  1.0,  1.0,  1.0,  1.0 }
@@ -310,10 +319,6 @@ void init_lights() {
 	glLightfv(GL_LIGHT0, GL_SPECULAR, light[0].specular);
 	glLightfv(GL_LIGHT0, GL_POSITION, light[0].position);
 
-	light[0].flag_ambient  = 1;
-	light[0].flag_diffuse  = 1;
-	light[0].flag_specular = 1;
-
 	GLfloat light1_intensity[]  = LIGHT1_INTENSITY;
 	memcpy( light[1].intensity,  light1_intensity,  4 * sizeof(GLfloat));
 	GLfloat light1_ambient[]  = LIGHT1_AMBIENT;
@@ -330,10 +335,6 @@ void init_lights() {
 	glLightfv(GL_LIGHT1, GL_DIFFUSE,  light[1].diffuse);
 	glLightfv(GL_LIGHT1, GL_SPECULAR, light[1].specular);
 	glLightfv(GL_LIGHT1, GL_POSITION, light[1].position);
-
-	light[1].flag_ambient  = 1;
-	light[1].flag_diffuse  = 1;
-	light[1].flag_specular = 1;
 
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
@@ -419,6 +420,14 @@ void key_input(unsigned char key, int x, int y){
 		case BTN_DOWN:		SetRotationX(360 - CAMERA_ROTATE_ANGLE, rotation); 
 					MultiplyMatrix(rotation, view_matrix, view_matrix); 
 					break;
+		case BTN_TGL_SHADING:	if(shader_idx == GOURAUD_SHADER_CONST) { 
+						shader_idx = PHONG_SHADER_CONST;
+						create_shader_program(PHONG_VS, PHONG_FS);
+					} else {
+						shader_idx = GOURAUD_SHADER_CONST;
+						create_shader_program(GOURAUD_VS, GOURAUD_FS);
+					}
+					break;
 		case BTN_HUE_UP:	RGBtoHSV(light[0].intensity, hsv);
 					hsv[0] += 2.0f;
 					if (hsv[0] > 360.0f) hsv[0] = 360.0f;
@@ -438,30 +447,6 @@ void key_input(unsigned char key, int x, int y){
 					hsv[2] -= 0.02f;
 					if (hsv[2] < 0.0f) hsv[2] = 0.0f;
 					HSVtoRGB(hsv, light[0].intensity);
-					break;
-		case BTN_TGL_AMBIENT:	if(light[0].flag_ambient || light[1].flag_ambient) {
-						light[0].flag_ambient = 0;
-						light[1].flag_ambient = 0;
-					} else {
-						light[0].flag_ambient = 1;
-						light[1].flag_ambient = 1;
-					}
-					break;
-		case BTN_TGL_DIFFUSE:	if(light[0].flag_diffuse || light[1].flag_diffuse) {
-						light[0].flag_diffuse = 0;
-						light[1].flag_diffuse = 0;
-					} else {
-						light[0].flag_diffuse = 1;
-						light[1].flag_diffuse = 1;
-					}
-					break;
-		case BTN_TGL_SPECULAR:	if(light[0].flag_specular || light[1].flag_specular) {
-						light[0].flag_specular = 0;
-						light[1].flag_specular = 0;
-					} else {
-						light[0].flag_specular = 1;
-						light[1].flag_specular = 1;
-					}
 					break;
 	};
 

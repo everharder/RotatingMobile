@@ -47,6 +47,10 @@ typedef struct lightsource {
 
 	//position
 	GLfloat position[4];
+
+	int flag_ambient;
+	int flag_diffuse;
+	int flag_specular;
 } lightsource;
 
 

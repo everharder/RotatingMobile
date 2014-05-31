@@ -56,6 +56,7 @@ void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLui
 	/* Set location of uniform sampler variable */ 
 	glUniform1i(TextureUniform, 0);
 	glEnableVertexAttribArray(vTexture);
+	glBindBuffer(GL_ARRAY_BUFFER, object->cbo);
 	glVertexAttribPointer(vTexture, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
 	//init normals

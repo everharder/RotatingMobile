@@ -14,6 +14,8 @@
 
 enum DataID {vPosition = 0, vNormal = 1, vTexture = 2}; 
 
+GLuint TextureID;
+
 typedef struct {
 	float model_matrix[16];
 
@@ -52,7 +54,6 @@ typedef struct lightsource {
 	int flag_diffuse;
 	int flag_specular;
 } lightsource;
-
 
 void init_object(object_gl *object);
 void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLuint shader_program, lightsource *light, int num_lights);

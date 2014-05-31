@@ -33,6 +33,7 @@
 #include "Matrix.h"  
 #include "Wall.h"
 #include "Util.h"
+#include "LoadTexture.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -102,11 +103,6 @@ float view_matrix[16];
 node_object *root;
 object_gl *walls[NUM_WALLS];	
 lightsource light[NUM_LIGHT];
-
-/* Variables for texture handling */
-GLuint TextureID;
-GLuint TextureUniform;
-TextureDataPtr Texture;
 
 
 /******************************************************************
@@ -371,7 +367,7 @@ void init_lights() {
 void setupTexture(void)
 {	
     /* Allocate texture container */
-    Texture = malloc(sizeof(TextureDataPtr));
+    TextureDataPtr Texture = malloc(sizeof(TextureDataPtr));
 
     int success = LoadTexture("Texture_1.bmp", Texture);
     if (!success)

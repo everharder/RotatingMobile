@@ -1,5 +1,6 @@
 #include "ObjectGl.h"
 #include "Matrix.h"
+#include "LoadTexture.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -50,13 +51,12 @@ void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLui
 	glBindTexture(GL_TEXTURE_2D, TextureID);
 	    
     	/* Get texture uniform handle from fragment shader */ 
-	TextureUniform = glGetUniformLocation(ShaderProgram, "TextureSampler");
+	GLuint TextureUniform = glGetUniformLocation(shader_program, "TextureSampler");
 	
 	/* Set location of uniform sampler variable */ 
 	glUniform1i(TextureUniform, 0);
 	glEnableVertexAttribArray(vTexture);
-	glVertexAttribPointer(vTexture, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), 
-			  sizeof(GLfloat) * 3);
+	glVertexAttribPointer(vTexture, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
 	//init normals
 	GLfloat *normals = malloc(object->num_vertx * 3);
@@ -178,7 +178,7 @@ void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLui
 	glDisableVertexAttribArray(vPosition);
 	glDisableVertexAttribArray(vNormal);
 	//glDisableVertexAttribArray(vColor);
-	glDisableVertexAttribArray(vUV);   
+	glDisableVertexAttribArray(vTexture);   
 }
 
 /******************************************************************

@@ -103,6 +103,11 @@ node_object *root;
 object_gl *walls[NUM_WALLS];	
 lightsource light[NUM_LIGHT];
 
+/* Variables for texture handling */
+GLuint TextureID;
+GLuint TextureUniform;
+TextureDataPtr Texture;
+
 
 /******************************************************************
 * draw mobile
@@ -356,6 +361,58 @@ void init_lights() {
 }
 
 /******************************************************************
+*
+* SetupTexture
+*
+* This function is called to load the texture and initialize
+* texturing parameters
+*
+*******************************************************************/
+void setupTexture(void)
+{	
+    /* Allocate texture container */
+    Texture = malloc(sizeof(TextureDataPtr));
+
+    int success = LoadTexture("Texture_1.bmp", Texture);
+    if (!success)
+    {
+        printf("Error loading texture. Exiting.\n");
+	exit(-1);
+    }
+
+    /* Create texture name and store in handle */
+    glGenTextures(1, &TextureID);
+	
+    /* Bind texture */
+    glBindTexture(GL_TEXTURE_2D, TextureID);
+
+    /* Load texture image into memory */
+    glTexImage2D(GL_TEXTURE_2D,     /* Target texture */
+		 0,                 /* Base level */
+		 GL_RGB,            /* Each element is RGB triple */ 
+		 Texture->width, Texture->height, 
+		 0,                 /* Border should be zero */
+		 GL_BGR,            /* Data storage format */
+		 GL_UNSIGNED_BYTE,  /* Type of pixel data */
+		 Texture->data);    /* Pointer to image data  */
+ 
+    /* Set up texturing parameters */
+
+    /* Repeat texture on edges when tiling */
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    /* Linear interpolation for magnification */
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    /* Trilinear MIP mapping for minification */ 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); 
+    glGenerateMipmap(GL_TEXTURE_2D); 
+
+    /* Note: MIP mapping not visible due to fixed camera */
+}
+
+/******************************************************************
 * initialize
 *******************************************************************/
 void initialize(void){   
@@ -375,6 +432,9 @@ void initialize(void){
 
 	/* Init Lighting */
 	init_lights();
+
+	/* Init texture */
+	setupTexture();
 
 	/* Set projection transform */
 	SetPerspectiveMatrix(FOVY, ASPECT, NEAR_PLANE, FAR_PLANE, proj_matrix);

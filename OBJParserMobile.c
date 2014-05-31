@@ -59,7 +59,7 @@ node_object* parse_mobile(char *filename) {
 		#endif
 
 		nodes[curr_obj]->obj.vertx_buffer_data = malloc(nodes[curr_obj]->obj.num_vertx * 3 * sizeof(GLfloat));
-		nodes[curr_obj]->obj.color_buffer_data = malloc(nodes[curr_obj]->obj.num_vertx * 3 * sizeof(GLfloat));
+		nodes[curr_obj]->obj.color_buffer_data = malloc(nodes[curr_obj]->obj.num_vertx * 2 * sizeof(GLfloat));
 		nodes[curr_obj]->obj.index_buffer_data = malloc(nodes[curr_obj]->obj.num_vectr * nodes[curr_obj]->obj.vertx_per_vectr * sizeof(GLushort));
 		nodes[curr_obj]->obj.normal_buffer_data = malloc(nodes[curr_obj]->obj.num_vertx * 3 * sizeof(GLfloat));
 
@@ -85,12 +85,11 @@ node_object* parse_mobile(char *filename) {
 
 		//read color data
 		for(int i=0; i < nodes[curr_obj]->obj.num_vertx; i++) {
-			fscanf(fp,"c %f %f %f\n", &nodes[curr_obj]->obj.color_buffer_data[3*i + 0], 
-						   &nodes[curr_obj]->obj.color_buffer_data[3*i + 1],
-						   &nodes[curr_obj]->obj.color_buffer_data[3*i + 2]);
+			fscanf(fp,"c %f %f\n", &nodes[curr_obj]->obj.color_buffer_data[2*i + 0], 
+						   &nodes[curr_obj]->obj.color_buffer_data[2*i + 1]);
 		}
 		#ifdef _DEBUG__DEBUG_OBJPARSER_
-			print_matrix("color data", nodes[curr_obj]->obj.color_buffer_data, 3, nodes[curr_obj]->obj.num_vertx);
+			print_matrix("color data", nodes[curr_obj]->obj.color_buffer_data, 2, nodes[curr_obj]->obj.num_vertx);
 		#endif
 
 		//read index data

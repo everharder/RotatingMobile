@@ -37,10 +37,26 @@ void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLui
 	glBindBuffer(GL_ARRAY_BUFFER, object->vbo);
 	glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
+/*
 	//put color data
 	glEnableVertexAttribArray(vColor);
 	glBindBuffer(GL_ARRAY_BUFFER, object->cbo);
 	glVertexAttribPointer(vColor, 3, GL_FLOAT,GL_FALSE, 0, 0);
+*/
+	/* Activate first (and only) texture unit */
+	glActiveTexture(GL_TEXTURE0);
+
+    	/* Bind current texture  */
+	glBindTexture(GL_TEXTURE_2D, TextureID);
+	    
+    	/* Get texture uniform handle from fragment shader */ 
+	TextureUniform = glGetUniformLocation(ShaderProgram, "TextureSampler");
+	
+	/* Set location of uniform sampler variable */ 
+	glUniform1i(TextureUniform, 0);
+	glEnableVertexAttribArray(vTexture);
+	glVertexAttribPointer(vTexture, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), 
+			  sizeof(GLfloat) * 3);
 
 	//init normals
 	GLfloat *normals = malloc(object->num_vertx * 3);
@@ -161,7 +177,8 @@ void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLui
 	/* Disable attributes */
 	glDisableVertexAttribArray(vPosition);
 	glDisableVertexAttribArray(vNormal);
-	glDisableVertexAttribArray(vColor);
+	//glDisableVertexAttribArray(vColor);
+	glDisableVertexAttribArray(vUV);   
 }
 
 /******************************************************************

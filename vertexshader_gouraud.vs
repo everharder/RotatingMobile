@@ -2,7 +2,7 @@
 
 layout (location = 0) in vec3 Position;
 layout (location = 1) in vec3 Normal;
-layout (location = 2) in vec3 Color;
+layout (location = 2) in vec2 UV;
 
 uniform mat4 ProjectionMatrix;
 uniform mat4 ViewMatrix;
@@ -20,6 +20,8 @@ uniform vec4 Ld[2]; // light diffuse
 uniform vec4 Ks[2];
 uniform vec4 Kd[2];
 uniform vec4 Ka[2];
+
+uniform sampler2D TextureSampler;
 
 float specular_exponent = 1.0; // specular 'power'
 
@@ -58,5 +60,5 @@ void main()
 			interpColor += Li[i] * Ks[i] * phongTerm;
 	}
 
-	outColor = interpColor * vec4(Color.x, Color.y, Color.z, 1.0);
+	outColor = interpColor * texture2D(TextureSampler, UV);
 }

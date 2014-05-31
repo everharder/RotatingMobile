@@ -12,7 +12,7 @@
 #define REFL_FACTOR_DIFFUSE	0.4
 #define REFL_FACTOR_SPECULAR	1.0 
 
-enum DataID {vPosition = 0, vNormal = 1, vColor = 2}; 
+enum DataID {vPosition = 0, vNormal = 1, vTexture = 2}; 
 
 typedef struct {
 	float model_matrix[16];

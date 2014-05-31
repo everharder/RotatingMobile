@@ -12,9 +12,13 @@
 #define REFL_FACTOR_DIFFUSE	0.4
 #define REFL_FACTOR_SPECULAR	1.0 
 
-enum DataID {vPosition = 0, vNormal = 1, vTexture = 2}; 
+enum DataID {vPosition = 0,  vTexture = 1, vNormal = 2}; 
 
-GLuint TextureID;
+typedef struct 
+{
+    GLfloat Position[3];
+    GLfloat UV[2];
+} VertexData;
 
 typedef struct {
 	float model_matrix[16];
@@ -29,6 +33,9 @@ typedef struct {
 	GLfloat  *color_buffer_data;
 	GLushort *index_buffer_data;
 	GLfloat  *normal_buffer_data;
+
+	VertexData *vertx_texture;
+	GLuint texture_id;
 
 	int num_vertx;
 	int num_vectr;

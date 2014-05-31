@@ -8,10 +8,8 @@ uniform mat4 ProjectionMatrix;
 uniform mat4 ViewMatrix;
 uniform mat4 ModelMatrix;
 
-uniform sampler2D TextureSampler;
-
 out vec4 vertexPosition;
-out vec4 vertexColor;
+out vec2 UVcoords;
 out vec4 viewDirection;
 out vec4 normalDirection;
 
@@ -21,5 +19,5 @@ void main()
 	normalDirection = ModelMatrix * vec4(Normal, 1.0);
 
 	gl_Position = ProjectionMatrix*ViewMatrix*vertexPosition;
-	vertexColor = texture2D(TextureSampler, UV);
+	UVcoords = UV;
 }

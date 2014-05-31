@@ -76,13 +76,13 @@
 #define NUM_WALLS		3
 
 //Lighting
-#define LIGHT0_POSITION		{ 10.0, 10.0,  0.0,  1.0 }
+#define LIGHT0_POSITION		{ 10.0, 10.0, 10.0,  1.0 }
 #define LIGHT0_INTENSITY	{  1.0,  1.0,  1.0,  1.0 }
 #define LIGHT0_SPECULAR		{  1.0,  1.0,  1.0,  1.0 }
 #define LIGHT0_AMBIENT		{  1.0,  0.0,  0.0,  1.0 }
 #define LIGHT0_DIFFUSE		{  1.0,  1.0,  1.0,  1.0 }
 
-#define LIGHT1_POSITION		{-10.0,  0.0, 10.0,  1.0 }
+#define LIGHT1_POSITION		{-10.0, 10.0, 10.0,  1.0 }
 #define LIGHT1_INTENSITY	{  1.0,  1.0,  1.0,  1.0 }
 #define LIGHT1_SPECULAR		{  1.0,  1.0,  1.0,  1.0 }
 #define LIGHT1_AMBIENT		{  1.0,  1.0,  1.0,  1.0 }
@@ -104,11 +104,13 @@ node_object *root;
 object_gl *walls[NUM_WALLS];	
 lightsource light[NUM_LIGHT];
 
+GLuint TextureID;
 
 /******************************************************************
 * draw mobile
 *******************************************************************/
 void draw_mobile(node_object node){
+	node.obj.texture_id = TextureID;
 	draw_single(&(node.obj), proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
 
 	if(node.child_l != NULL)
@@ -127,7 +129,7 @@ void display(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//draw walls
-	draw_n(walls, NUM_WALLS, proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
+	//draw_n(walls, NUM_WALLS, proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
 
 	//draw actual objects
 	draw_mobile(*root);
@@ -369,7 +371,7 @@ void setupTexture(void)
     /* Allocate texture container */
     TextureDataPtr Texture = malloc(sizeof(TextureDataPtr));
 
-    int success = LoadTexture("Texture_1.bmp", Texture);
+    int success = LoadTexture("marble.bmp", Texture);
     if (!success)
     {
         printf("Error loading texture. Exiting.\n");
@@ -391,10 +393,8 @@ void setupTexture(void)
 		 GL_BGR,            /* Data storage format */
 		 GL_UNSIGNED_BYTE,  /* Type of pixel data */
 		 Texture->data);    /* Pointer to image data  */
- 
-    /* Set up texturing parameters */
 
-    /* Repeat texture on edges when tiling */
+/* Repeat texture on edges when tiling */
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
@@ -404,8 +404,6 @@ void setupTexture(void)
     /* Trilinear MIP mapping for minification */ 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); 
     glGenerateMipmap(GL_TEXTURE_2D); 
-
-    /* Note: MIP mapping not visible due to fixed camera */
 }
 
 /******************************************************************

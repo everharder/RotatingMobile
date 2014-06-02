@@ -1,6 +1,6 @@
 #include "ObjectGl.h"
 #include "Matrix.h"
-#include "LoadTexture.h"
+#include "Util.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -11,12 +11,16 @@
 * binds buffers to object
 *******************************************************************/
 void init_object(object_gl *object) {
+	// FIXME Necessary??
 	glGenBuffers(1, &(object->vbo));
+	// FIXME Necessary??
 	glGenBuffers(1, &(object->cbo));
+
 	glGenBuffers(1, &(object->nbo));
 	glGenBuffers(1, &(object->ibo));
 
-	object->vertx_texture= malloc(sizeof(VertexData) * object->num_vertx);
+	object->vertx_texture = malloc(sizeof(VertexData) * object->num_vertx);
+	/* Copy vertex and color data to new texture buffer */
 	for(int i=0; i < object->num_vertx; i++) {
 		object->vertx_texture[i].Position[0] = object->vertx_buffer_data[3*i + 0];
 		object->vertx_texture[i].Position[1] = object->vertx_buffer_data[3*i + 1];
@@ -28,6 +32,7 @@ void init_object(object_gl *object) {
 
   
     	/* Create new buffer object and assign name */
+	// FIXME Necessary??
     	glBindBuffer(GL_ARRAY_BUFFER, object->vbo);
  
     	/* Load data into buffer object */
@@ -51,10 +56,15 @@ void init_object(object_gl *object) {
 * DrawSingle
 *******************************************************************/
 void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLuint shader_program, lightsource *light, int num_lights) {
-	 glBindBuffer(GL_ARRAY_BUFFER, object->vbo);
+	// FIXME Necessary??	
+	glBindBuffer(GL_ARRAY_BUFFER, object->vbo);
+
+	/* Init texture of object */
+	setup_texture(object);
 
 	/* Activate first (and only) texture unit */
 	glActiveTexture(GL_TEXTURE0);
+
     	/* Bind current texture  */
 	glBindTexture(GL_TEXTURE_2D, object->texture_id);
 	    
@@ -200,6 +210,55 @@ void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLui
 void draw_n(object_gl **objects, int n, float *proj_matrix, float *view_matrix, GLuint shader_program, lightsource *light, int num_lights){
 	for(int i=0; i < n; i++)
 		draw_single(objects[i], proj_matrix, view_matrix, shader_program, light, num_lights);
+}
+
+/******************************************************************
+*
+* setupTexture
+*
+* This function is called to load the texture and initialize
+* texturing parameters for each object.
+*
+*******************************************************************/
+void setup_texture(object_gl *object)
+{	
+    /* Allocate texture container */
+    object->texture = malloc(sizeof(TextureDataPtr));
+
+    char *image = getRandomTexture();
+    int success = LoadTexture(image, object->texture);
+    if (!success)
+    {
+        printf("Error loading texture '%s'. Exiting.\n", image);
+	exit(-1);
+    }
+
+    /* Create texture name and store in handle */
+    glGenTextures(1, &(object->texture_id));
+	
+    /* Bind texture */
+    glBindTexture(GL_TEXTURE_2D, object->texture_id);
+
+    /* Load texture image into memory */
+    glTexImage2D(GL_TEXTURE_2D,     /* Target texture */
+		 0,                 /* Base level */
+		 GL_RGB,            /* Each element is RGB triple */ 
+		 object->texture->width, object->texture->height, 
+		 0,                 /* Border should be zero */
+		 GL_BGR,            /* Data storage format */
+		 GL_UNSIGNED_BYTE,  /* Type of pixel data */
+		 object->texture->data);    /* Pointer to image data  */
+
+    /* Repeat texture on edges when tiling */
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    /* Linear interpolation for magnification */
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    /* Trilinear MIP mapping for minification */ 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); 
+    glGenerateMipmap(GL_TEXTURE_2D); 
 }
 
 /******************************************************************

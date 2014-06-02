@@ -1,8 +1,8 @@
 /******************************************************************
-* PROGRAMMING EXERCISE 2 - Rotating Mobile
+* PROGRAMMING EXERCISE 3 - Rotating Mobile
 * authors: 	Daniel Eberharter
 *	  	Stefan Haselwanter
-* date: 	07.04.2014   
+* date: 	10.06.2014   
 * version:	1.0
 * desc.:	draws and animates a simple rotating mobile 
 
@@ -33,7 +33,6 @@
 #include "Matrix.h"  
 #include "Wall.h"
 #include "Util.h"
-#include "LoadTexture.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -64,11 +63,11 @@
 
 
 //Shaders
-#define GOURAUD_VS		"vertexshader_gouraud.vs"
-#define GOURAUD_FS		"fragmentshader_gouraud.fs"
+#define GOURAUD_VS		"shaders/vertexshader_gouraud.vs"
+#define GOURAUD_FS		"shaders/fragmentshader_gouraud.fs"
 #define GOURAUD_SHADER_CONST	0
-#define PHONG_VS		"vertexshader_phong.vs"
-#define PHONG_FS		"fragmentshader_phong.fs"
+#define PHONG_VS		"shaders/vertexshader_phong.vs"
+#define PHONG_FS		"shaders/fragmentshader_phong.fs"
 #define PHONG_SHADER_CONST	1
 #define INIT_SHADER_CONST	GOURAUD_SHADER_CONST
 
@@ -104,13 +103,11 @@ node_object *root;
 object_gl *walls[NUM_WALLS];	
 lightsource light[NUM_LIGHT];
 
-GLuint TextureID;
 
 /******************************************************************
 * draw mobile
 *******************************************************************/
 void draw_mobile(node_object node){
-	node.obj.texture_id = TextureID;
 	draw_single(&(node.obj), proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
 
 	if(node.child_l != NULL)
@@ -284,7 +281,7 @@ void init_object_mobile(node_object *node) {
 * init objects
 *******************************************************************/
 void init_objects() {
-	root = parse_mobile("mobile.obj");
+	root = parse_mobile("data/mobile.obj");
 
 	if(root == NULL) {
 		printf("error parsing file...\n");
@@ -350,60 +347,10 @@ void init_lights() {
 	light[1].flag_diffuse  = 1;
 	light[1].flag_specular = 1;
 
-
-
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
 	glEnable(GL_DEPTH_TEST);
-}
-
-/******************************************************************
-*
-* SetupTexture
-*
-* This function is called to load the texture and initialize
-* texturing parameters
-*
-*******************************************************************/
-void setupTexture(void)
-{	
-    /* Allocate texture container */
-    TextureDataPtr Texture = malloc(sizeof(TextureDataPtr));
-
-    int success = LoadTexture("marble.bmp", Texture);
-    if (!success)
-    {
-        printf("Error loading texture. Exiting.\n");
-	exit(-1);
-    }
-
-    /* Create texture name and store in handle */
-    glGenTextures(1, &TextureID);
-	
-    /* Bind texture */
-    glBindTexture(GL_TEXTURE_2D, TextureID);
-
-    /* Load texture image into memory */
-    glTexImage2D(GL_TEXTURE_2D,     /* Target texture */
-		 0,                 /* Base level */
-		 GL_RGB,            /* Each element is RGB triple */ 
-		 Texture->width, Texture->height, 
-		 0,                 /* Border should be zero */
-		 GL_BGR,            /* Data storage format */
-		 GL_UNSIGNED_BYTE,  /* Type of pixel data */
-		 Texture->data);    /* Pointer to image data  */
-
-/* Repeat texture on edges when tiling */
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    /* Linear interpolation for magnification */
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    /* Trilinear MIP mapping for minification */ 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); 
-    glGenerateMipmap(GL_TEXTURE_2D); 
 }
 
 /******************************************************************
@@ -426,9 +373,6 @@ void initialize(void){
 
 	/* Init Lighting */
 	init_lights();
-
-	/* Init texture */
-	setupTexture();
 
 	/* Set projection transform */
 	SetPerspectiveMatrix(FOVY, ASPECT, NEAR_PLANE, FAR_PLANE, proj_matrix);
@@ -591,7 +535,7 @@ int main(int argc, char** argv) {
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 	glutInitWindowSize(600, 600);
 	glutInitWindowPosition(400, 400);
-	glutCreateWindow("CG ProgrammingExercise 2 - Eberharter/Haselwanter");
+	glutCreateWindow("CG ProgrammingExercise 3 - Eberharter/Haselwanter");
 
 	//init glew
 	GLenum res = glewInit();

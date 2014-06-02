@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <time.h>
 #include "Util.h"
 
 // r,g,b values are from 0 to 1
@@ -106,4 +108,20 @@ void HSVtoRGB(GLfloat hsv[4], GLfloat rgb[4]){
 	}
 
 	rgb[3] = hsv[3];
+}
+
+/******************************************************************
+* getRandomTexture
+*
+* returns a random picture for texturing out of an existing list.
+*******************************************************************/
+char* getRandomTexture(){
+	srand(time(NULL));
+
+	switch(rand() % 3){
+		case 0: return "data/marble.bmp";
+		case 1: return "data/honeycomp.bmp";
+		case 2: return "data/bricks.bmp";
+		default: return NULL;
+	}
 }

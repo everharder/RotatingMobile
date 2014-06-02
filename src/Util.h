@@ -11,6 +11,7 @@
 
 void RGBtoHSV(GLfloat rgb[4], GLfloat hsv[4]);
 void HSVtoRGB(GLfloat hsv[4], GLfloat rgb[4]);
+char* getRandomTexture();
 
 
 #endif

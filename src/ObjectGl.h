@@ -38,6 +38,7 @@ typedef struct {
 	VertexData *vertx_texture;
 	TextureDataPtr texture;
 	GLuint texture_id;
+	float alpha;
 
 	int num_vertx;
 	int num_vectr;
@@ -66,7 +67,7 @@ typedef struct lightsource {
 
 void init_object(object_gl *object);
 void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLuint shader_program, lightsource *light, int num_lights);
-void draw_single_scaled(object_gl *object, float *proj_matrix, float *view_matrix, GLuint shader_program, lightsource *light, int num_lights, double *scale);
+void draw_single_mirror(object_gl *object, float *proj_matrix, float *view_matrix, GLuint shader_program, lightsource *light, int num_lights, double *scale, double *translation);
 void draw_n     (object_gl **objects, int n, float *proj_matrix, float *view_matrix, GLuint shader_program, lightsource *light, int num_lights);
 void orbit_object (object_gl *object, object_gl *center, float degree);
 void rotate_object(object_gl *object, float degree);

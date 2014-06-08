@@ -117,6 +117,9 @@ node_object* parse_mobile(char *filename) {
 		MultiplyMatrix(transl, nodes[curr_obj]->obj.model_matrix, nodes[curr_obj]->obj.model_matrix);
 		/* Init texture of object */
 		setup_texture(&(nodes[curr_obj]->obj));
+
+		//set opacity
+		nodes[curr_obj]->obj.alpha = 1.0;
 	}
 	
 	//link parents to childs

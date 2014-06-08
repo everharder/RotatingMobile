@@ -7,6 +7,9 @@ in vec4 normalDirection;
 uniform int flag_ambient;
 uniform int flag_diffuse;
 uniform int flag_specular;
+
+uniform float alpha;
+
 uniform sampler2D TextureSampler;
 
 uniform vec4 Li[2]; // light intensity
@@ -54,4 +57,5 @@ void main()
 	}
 
 	outColor = interpColor * texture2D(TextureSampler, UVcoords);
+	outColor.a = alpha;
 }

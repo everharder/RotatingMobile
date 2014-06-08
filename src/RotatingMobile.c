@@ -72,7 +72,7 @@
 #define INIT_SHADER_CONST	GOURAUD_SHADER_CONST
 
 #define NUM_LIGHT		2
-#define NUM_WALLS		3
+#define NUM_WALLS		1
 
 //Lighting
 #define LIGHT0_POSITION		{ 10.0, 10.0, 10.0,  1.0 }
@@ -117,14 +117,14 @@ void draw_mobile(node_object node){
 		draw_mobile(*(node.child_r));
 }
 
-void draw_mobile_mirror(node_object node, double *scale){
-	draw_single_scaled(&(node.obj), proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT, scale);
+void draw_mobile_mirror(node_object node, double *scale, double *translation){
+	draw_single_mirror(&(node.obj), proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT, scale, translation);
 
 	if(node.child_l != NULL)
-		draw_mobile_mirror(*(node.child_l), scale);
+		draw_mobile_mirror(*(node.child_l), scale, translation);
 
 	if(node.child_r != NULL)
-		draw_mobile_mirror(*(node.child_r), scale);
+		draw_mobile_mirror(*(node.child_r), scale, translation);
 }
 
 /******************************************************************
@@ -138,37 +138,32 @@ void display(){
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
 	//fill stencil buffer
-	double scale[] = { 1.0, -1.0, 1.0 };
 	glEnable(GL_STENCIL_TEST);
 	glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 	glStencilFunc(GL_ALWAYS, 1, 0xFFFFFFFF);
 
-	draw_single(walls[1], proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
-	
- 	/* Re-enable update of color and depth. */ 
+	draw_single(walls[0], proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
+
+ 	// reenabled color/depth 
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	glEnable(GL_DEPTH_TEST);
 
-  	/* Now, only render where stencil is set to 1. */
-	glStencilFunc(GL_EQUAL, 1, 0xffffffff);  /* draw if stencil ==1 */
+  	// draw reflection
+	glStencilFunc(GL_EQUAL, 1, 0xffffffff); 
   	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-
-  	/* Draw reflected ninja, but only where floor is. */
-	draw_mobile_mirror(*root, scale);
-
-	glDisable(GL_STENCIL_TEST);
+	double scale[] = { 1.0, -1.0, 1.0 };
+	double translation[] = { 0.0, 0.0, 0.0 };
+	draw_mobile_mirror(*root, scale, translation);
 
 	//draw actual objects
+	glDisable(GL_STENCIL_TEST);
+
 	draw_mobile(*root);
 
-	//draw walls
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glColor4f(1,1,1,0.45);
-	draw_single(walls[1], proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
-	glEnable(GL_BLEND);
- 
-	/* Swap between front and back buffer */ 
+	glEnable (GL_BLEND); 
+	glBlendFunc (GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	draw_single(walls[0], proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
+  
 	glutSwapBuffers();
 }
 
@@ -326,12 +321,11 @@ void init_objects() {
 	}
 
 	// Walls
-	walls[0] = create_wallXY(-20.0,-20.0,-20.0, 20.0, 20.0,-20.0, 0.3, 0.3, 0.3);
-	walls[1] = create_wallXZ(-20.0,-20.0,-20.0, 20.0,-20.0, 20.0, 0.3, 0.3, 0.3);
-	walls[2] = create_wallYZ(-20.0,-20.0,-20.0,-20.0, 20.0, 20.0, 0.3, 0.3, 0.3);
+	walls[0] = create_wallXZ(-20.0,-20.0,-20.0, 20.0,-20.0, 20.0, "data/mirror.bmp");
+	walls[0]->alpha = 0.1;
 
-	if(walls[0] == NULL || walls[1] == NULL || walls[2] == NULL){
-		printf("error creating grids...\n");
+	if(walls[0] == NULL){
+		printf("error creating grid...\n");
 		exit(EXIT_FAILURE);
 	}
 }

@@ -32,6 +32,7 @@
 #include "LoadShader.h"  
 #include "Matrix.h"  
 #include "Wall.h"
+#include "Billboard.h"
 #include "Util.h"
 
 #ifndef M_PI
@@ -100,7 +101,8 @@ float proj_matrix[16];
 float view_matrix[16]; 	
 
 node_object *root;
-object_gl *walls[NUM_WALLS];	
+object_gl *walls[NUM_WALLS];
+object_gl *billboard;
 lightsource light[NUM_LIGHT];
 
 
@@ -127,6 +129,7 @@ void display(){
 
 	//draw walls
 	//draw_n(walls, NUM_WALLS, proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
+	draw_n(billboard, 1, proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
 
 	//draw actual objects
 	draw_mobile(*root);
@@ -169,11 +172,46 @@ void rotate_mobile(node_object *node) {
 }
 
 /******************************************************************
+* animate billboard
+* Iterate through UV coordinates from top-left to down-right.
+*******************************************************************/
+void animate_billboard(){
+	for (int i = 0; i < billboard->num_vertx; i++){
+		billboard->vertx_texture[i].UV[0] += STEP_X;
+		// Reach down-right corner.
+		if (billboard->vertx_texture[0].UV[0] >= 1.0 &&	billboard->vertx_texture[0].UV[1] <= 0.0){
+			// Reset U and V to start coordinates.
+			billboard->vertx_texture[0].UV[0] = 0.0;
+			billboard->vertx_texture[0].UV[1] = 0.66;
+			billboard->vertx_texture[1].UV[0] = 0.25;
+			billboard->vertx_texture[1].UV[1] = 0.99;
+			billboard->vertx_texture[2].UV[0] = 0.0;
+			billboard->vertx_texture[2].UV[1] = 0.99;
+			billboard->vertx_texture[3].UV[0] = 0.25;
+			billboard->vertx_texture[3].UV[1] = 0.66;
+			break;			
+		}
+		// Reach right border.
+		if (billboard->vertx_texture[0].UV[0] >= 1.0){
+			// Decrease V of each vertex and reset U.
+			for (int j = 0; j < billboard->num_vertx; j++)
+				billboard->vertx_texture[j].UV[1] -= STEP_Y;
+			billboard->vertx_texture[0].UV[0] = 0.0;
+			billboard->vertx_texture[1].UV[0] = 0.25;
+			billboard->vertx_texture[2].UV[0] = 0.0;
+			billboard->vertx_texture[3].UV[0] = 0.25;
+			break;
+		}
+	}
+}
+
+/******************************************************************
 * on idle
 *******************************************************************/
 void on_idle(){
 	rotate_mobile(root);
 	display();
+	//animate_billboard();
 }
 
 /******************************************************************
@@ -292,9 +330,16 @@ void init_objects() {
 	walls[0] = create_wallXY(-20.0,-20.0,-20.0, 20.0, 20.0,-20.0, 0.3, 0.3, 0.3);
 	walls[1] = create_wallXZ(-20.0,-20.0,-20.0, 20.0,-20.0, 20.0, 0.3, 0.3, 0.3);
 	walls[2] = create_wallYZ(-20.0,-20.0,-20.0,-20.0, 20.0, 20.0, 0.3, 0.3, 0.3);
+	// Billboard
+	billboard = create_board(-5.0, 6.0, 0.0, 5.0, 11.0, 0.0);
 
 	if(walls[0] == NULL || walls[1] == NULL || walls[2] == NULL){
 		printf("error creating grids...\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if(billboard == NULL){
+		printf("error creating billboard...\n");
 		exit(EXIT_FAILURE);
 	}
 }
@@ -371,6 +416,8 @@ void initialize(void){
 	for(int i=0; i < NUM_WALLS; i++) 
 		init_object(walls[i]);
 
+	init_object(billboard);
+
 	/* Init Lighting */
 	init_lights();
 
@@ -411,13 +458,16 @@ void key_input(unsigned char key, int x, int y){
 
 	SetTranslation(0.0, 0.0, CAMERA_DIST, translte);
 	MultiplyMatrix(translte, view_matrix, view_matrix);
+	MultiplyMatrix(translte, billboard->model_matrix, billboard->model_matrix);
 
 	switch(key) {
 		case BTN_RIGHT: 	SetRotationY(CAMERA_ROTATE_ANGLE, rotation); 		 
 					MultiplyMatrix(rotation, view_matrix, view_matrix); 
+					MultiplyMatrix(rotation, billboard->model_matrix, billboard->model_matrix);
 					break;
 		case BTN_LEFT: 		SetRotationY(360 - CAMERA_ROTATE_ANGLE, rotation); 
-					MultiplyMatrix(rotation, view_matrix, view_matrix); 
+					MultiplyMatrix(rotation, view_matrix, view_matrix);
+					MultiplyMatrix(rotation, billboard->model_matrix, billboard->model_matrix);
 					break;
 		case BTN_UP:		SetRotationX(CAMERA_ROTATE_ANGLE, rotation); 
 					MultiplyMatrix(rotation, view_matrix, view_matrix); 
@@ -491,7 +541,8 @@ void key_input(unsigned char key, int x, int y){
 	};
 
 	SetTranslation(0.0, 0.0,CAMERA_DIST * -1, translte);
-	MultiplyMatrix(translte, view_matrix, view_matrix); 
+	MultiplyMatrix(translte, view_matrix, view_matrix);
+	MultiplyMatrix(translte, billboard->model_matrix, billboard->model_matrix);
 }
 
 /******************************************************************

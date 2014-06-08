@@ -111,6 +111,54 @@ void HSVtoRGB(GLfloat hsv[4], GLfloat rgb[4]){
 }
 
 /******************************************************************
+*
+* setupTexture
+*
+* This function is called to load the texture and initialize
+* texturing parameters for each object.
+*
+*******************************************************************/
+void setup_texture(object_gl *object, char *filename)
+{	
+    /* Allocate texture container */
+    object->texture = malloc(sizeof(TextureDataPtr));
+
+    int success = LoadTexture(filename, object->texture);
+    if (!success)
+    {
+        printf("Error loading texture '%s'. Exiting.\n", filename);
+	exit(-1);
+    }
+
+    /* Create texture name and store in handle */
+    glGenTextures(1, &(object->texture_id));
+	
+    /* Bind texture */
+    glBindTexture(GL_TEXTURE_2D, object->texture_id);
+
+    /* Load texture image into memory */
+    glTexImage2D(GL_TEXTURE_2D,     /* Target texture */
+		 0,                 /* Base level */
+		 GL_RGB,            /* Each element is RGB triple */ 
+		 object->texture->width, object->texture->height, 
+		 0,                 /* Border should be zero */
+		 GL_BGR,            /* Data storage format */
+		 GL_UNSIGNED_BYTE,  /* Type of pixel data */
+		 object->texture->data);    /* Pointer to image data  */
+
+    /* Repeat texture on edges when tiling */
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    /* Linear interpolation for magnification */
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    /* Trilinear MIP mapping for minification */ 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); 
+    glGenerateMipmap(GL_TEXTURE_2D); 
+}
+
+/******************************************************************
 * getRandomTexture
 *
 * returns a random picture for texturing out of an existing list.

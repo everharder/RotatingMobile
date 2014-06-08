@@ -138,12 +138,12 @@ void display(){
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
 	//fill stencil buffer
-	double scale[] = { 1, -1, 1 };
+	double scale[] = { 1.0, -1.0, 1.0 };
 	glEnable(GL_STENCIL_TEST);
 	glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 	glStencilFunc(GL_ALWAYS, 1, 0xFFFFFFFF);
 
-	draw_single(walls[0], proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
+	draw_single(walls[1], proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
 	
  	/* Re-enable update of color and depth. */ 
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -162,7 +162,11 @@ void display(){
 	draw_mobile(*root);
 
 	//draw walls
-	//draw_n(walls, NUM_WALLS, proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glColor4f(1,1,1,0.45);
+	draw_single(walls[1], proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
+	glEnable(GL_BLEND);
  
 	/* Swap between front and back buffer */ 
 	glutSwapBuffers();

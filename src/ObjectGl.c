@@ -200,21 +200,30 @@ void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLui
 }
 
 void draw_single_scaled(object_gl *object, float *proj_matrix, float *view_matrix, GLuint shader_program, lightsource *light, int num_lights, double *scale) {
-	
-	for(int i = 0; i < object->num_vertx; i += 3) {	
-		object->vertx_buffer_data[3*i + 0] *= scale[0];
-		object->vertx_buffer_data[3*i + 1] *= scale[1];
-		object->vertx_buffer_data[3*i + 2] *= scale[2];
+	print_matrix("vertx before", object->vertx_buffer_data, 3, object->num_vertx);
+	for(int i = 0; i < object->num_vertx * 3; i+=3) {	
+		object->vertx_buffer_data[i + 0] *= scale[0];
+		object->vertx_buffer_data[i + 1] *= scale[1];
+		object->vertx_buffer_data[i + 2] *= scale[2];
 	}
+	print_matrix("vertx after", object->vertx_buffer_data, 3, object->num_vertx);
 
+	object->model_matrix[ 3] *= scale[0];
+	object->model_matrix[ 7] *= scale[1];
+	object->model_matrix[11] *= scale[2];
 	init_object(object);
+
 	draw_single(object, proj_matrix, view_matrix, shader_program, light, num_lights);
 
-	for(int i = 0; i < object->num_vertx; i += 3) {	
-		object->vertx_buffer_data[3*i + 0] /= scale[0];
-		object->vertx_buffer_data[3*i + 1] /= scale[1];
-		object->vertx_buffer_data[3*i + 2] /= scale[2];
+	//revert
+	for(int i = 0; i < object->num_vertx * 3; i+=3) {	
+		object->vertx_buffer_data[i + 0] /= scale[0];
+		object->vertx_buffer_data[i + 1] /= scale[1];
+		object->vertx_buffer_data[i + 2] /= scale[2];
 	}
+	object->model_matrix[ 3] /= scale[0];
+	object->model_matrix[ 7] /= scale[1];
+	object->model_matrix[11] /= scale[2];
 	init_object(object);
 }
 

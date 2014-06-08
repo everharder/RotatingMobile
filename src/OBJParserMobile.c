@@ -51,6 +51,7 @@ node_object* parse_mobile(char *filename) {
 		fscanf(fp, "%d\n",  &nodes[curr_obj]->obj.vertx_per_vectr);
 		fscanf(fp, "%f\n",  &nodes[curr_obj]->obj.rotation_spd);
 		fscanf(fp, "%hd\n",  &nodes[curr_obj]->obj.rotation_dir);
+		fscanf(fp, "a %f\n",  &nodes[curr_obj]->obj.alpha);
 		#ifdef _DEBUG__DEBUG_OBJPARSER_
 			printf("\n\nnum_vertx: %d\nnum_vectr: %d\nvertx_per_vectr: %d\n", nodes[curr_obj]->obj.num_vertx,
 											  nodes[curr_obj]->obj.num_vectr,
@@ -117,9 +118,6 @@ node_object* parse_mobile(char *filename) {
 		MultiplyMatrix(transl, nodes[curr_obj]->obj.model_matrix, nodes[curr_obj]->obj.model_matrix);
 		/* Init texture of object */
 		setup_texture(&(nodes[curr_obj]->obj));
-
-		//set opacity
-		nodes[curr_obj]->obj.alpha = 1.0;
 	}
 	
 	//link parents to childs

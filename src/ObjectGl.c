@@ -60,7 +60,8 @@ void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLui
 	glBindBuffer(GL_ARRAY_BUFFER, object->vbo);
 
 	/* Init texture of object */
-	setup_texture(object);
+	if (object->texture == NULL)
+		setup_texture(object);
 
 	/* Activate first (and only) texture unit */
 	glActiveTexture(GL_TEXTURE0);

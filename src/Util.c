@@ -120,7 +120,7 @@ char* getRandomTexture(){
 
 	switch(rand() % 3){
 		case 0: return "data/marble.bmp";
-		case 1: return "data/honeycomp.bmp";
+		case 1: return "data/honeycomb.bmp";
 		case 2: return "data/bricks.bmp";
 		default: return NULL;
 	}

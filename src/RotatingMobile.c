@@ -117,20 +117,53 @@ void draw_mobile(node_object node){
 		draw_mobile(*(node.child_r));
 }
 
+void draw_mobile_mirror(node_object node, double *scale){
+	draw_single_scaled(&(node.obj), proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT, scale);
+
+	if(node.child_l != NULL)
+		draw_mobile_mirror(*(node.child_l), scale);
+
+	if(node.child_r != NULL)
+		draw_mobile_mirror(*(node.child_r), scale);
+}
+
 /******************************************************************
 * display
 
 *******************************************************************/
 void display(){
 	//clear screen
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
-	//draw walls
-	//draw_n(walls, NUM_WALLS, proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
+	//fill stencil buffer
+	double scale[] = { 1, -1, 1 };
+	glEnable(GL_STENCIL_TEST);
+	glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+	glStencilFunc(GL_ALWAYS, 1, 0xFFFFFFFF);
+
+	draw_single(walls[0], proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
+	
+ 	/* Re-enable update of color and depth. */ 
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
+
+  	/* Now, only render where stencil is set to 1. */
+	glStencilFunc(GL_EQUAL, 1, 0xffffffff);  /* draw if stencil ==1 */
+  	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+
+  	/* Draw reflected ninja, but only where floor is. */
+	draw_mobile_mirror(*root, scale);
+
+	glDisable(GL_STENCIL_TEST);
 
 	//draw actual objects
 	draw_mobile(*root);
 
+	//draw walls
+	//draw_n(walls, NUM_WALLS, proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
+ 
 	/* Swap between front and back buffer */ 
 	glutSwapBuffers();
 }
@@ -532,7 +565,7 @@ void window_close(){
 int main(int argc, char** argv) {
 	//init glut
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL);
 	glutInitWindowSize(600, 600);
 	glutInitWindowPosition(400, 400);
 	glutCreateWindow("CG ProgrammingExercise 3 - Eberharter/Haselwanter");

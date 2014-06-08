@@ -68,7 +68,6 @@ void init_object(object_gl *object);
 void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLuint shader_program, lightsource *light, int num_lights);
 void draw_single_scaled(object_gl *object, float *proj_matrix, float *view_matrix, GLuint shader_program, lightsource *light, int num_lights, double *scale);
 void draw_n     (object_gl **objects, int n, float *proj_matrix, float *view_matrix, GLuint shader_program, lightsource *light, int num_lights);
-void setup_texture(object_gl *object);
 void orbit_object (object_gl *object, object_gl *center, float degree);
 void rotate_object(object_gl *object, float degree);
 

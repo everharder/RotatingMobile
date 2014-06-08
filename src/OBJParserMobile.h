@@ -14,6 +14,7 @@ typedef struct node_object {
 
 
 node_object* parse_mobile(char *filename);
+void setup_texture(object_gl *object);
 
 
 #endif

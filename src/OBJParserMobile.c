@@ -1,5 +1,6 @@
 #include "OBJParserMobile.h"
 #include "Matrix.h"
+#include "Util.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -114,6 +115,8 @@ node_object* parse_mobile(char *filename) {
 		SetTranslation(x, y, z, transl);
 		SetIdentityMatrix(nodes[curr_obj]->obj.model_matrix);
 		MultiplyMatrix(transl, nodes[curr_obj]->obj.model_matrix, nodes[curr_obj]->obj.model_matrix);
+		/* Init texture of object */
+		setup_texture(&(nodes[curr_obj]->obj));
 	}
 	
 	//link parents to childs
@@ -132,4 +135,53 @@ node_object* parse_mobile(char *filename) {
 		root = nodes[root_idx];
 	free(nodes);
 	return root;
+}
+
+/******************************************************************
+*
+* setupTexture
+*
+* This function is called to load the texture and initialize
+* texturing parameters for each object.
+*
+*******************************************************************/
+void setup_texture(object_gl *object)
+{	
+    /* Allocate texture container */
+    object->texture = malloc(sizeof(TextureDataPtr));
+
+    char *image = getRandomTexture();
+    int success = LoadTexture(image, object->texture);
+    if (!success)
+    {
+        printf("Error loading texture '%s'. Exiting.\n", image);
+	exit(-1);
+    }
+
+    /* Create texture name and store in handle */
+    glGenTextures(1, &(object->texture_id));
+	
+    /* Bind texture */
+    glBindTexture(GL_TEXTURE_2D, object->texture_id);
+
+    /* Load texture image into memory */
+    glTexImage2D(GL_TEXTURE_2D,     /* Target texture */
+		 0,                 /* Base level */
+		 GL_RGB,            /* Each element is RGB triple */ 
+		 object->texture->width, object->texture->height, 
+		 0,                 /* Border should be zero */
+		 GL_BGR,            /* Data storage format */
+		 GL_UNSIGNED_BYTE,  /* Type of pixel data */
+		 object->texture->data);    /* Pointer to image data  */
+
+    /* Repeat texture on edges when tiling */
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    /* Linear interpolation for magnification */
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    /* Trilinear MIP mapping for minification */ 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); 
+    glGenerateMipmap(GL_TEXTURE_2D); 
 }

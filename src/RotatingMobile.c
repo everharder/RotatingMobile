@@ -364,7 +364,7 @@ void init_objects() {
 	walls[0]->alpha = 0.1;
 
 	// Billboard
-	billboard = create_board(-5.0, 6.0, 0.0, 5.0, 11.0, 0.0);
+	billboard = create_board(-2.0, 6.0, 0.0, 2.0, 12.0, 0.0);
 
 	if(walls[0] == NULL){
 		printf("error creating grid...\n");

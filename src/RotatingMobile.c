@@ -4,7 +4,8 @@
 *	  	Stefan Haselwanter
 * date: 	10.06.2014   
 * version:	1.0
-* desc.:	draws and animates a simple rotating mobile 
+* desc.:	draws and animates a simple rotating mobile with
+		basic mirroring, texturing and billboarding
 
 		the code may contain fragments of the programming
 		example no. 2 from Prof. Matthias Harders.
@@ -104,6 +105,10 @@ node_object *root;
 object_gl *walls[NUM_WALLS];
 object_gl *billboard;
 lightsource light[NUM_LIGHT];
+int last_billboard_animation = 0;
+
+float billboard_step_x = STEP_X;
+float billboard_step_y = STEP_Y;
 
 
 /******************************************************************
@@ -209,33 +214,51 @@ void rotate_mobile(node_object *node) {
 * Iterate through UV coordinates from top-left to down-right.
 *******************************************************************/
 void animate_billboard(){
-	for (int i = 0; i < billboard->num_vertx; i++){
-		billboard->vertx_texture[i].UV[0] += STEP_X;
-		// Reach down-right corner.
-		if (billboard->vertx_texture[0].UV[0] >= 1.0 &&	billboard->vertx_texture[0].UV[1] <= 0.0){
-			// Reset U and V to start coordinates.
-			billboard->vertx_texture[0].UV[0] = 0.0;
-			billboard->vertx_texture[0].UV[1] = 0.66;
-			billboard->vertx_texture[1].UV[0] = 0.25;
-			billboard->vertx_texture[1].UV[1] = 0.99;
-			billboard->vertx_texture[2].UV[0] = 0.0;
-			billboard->vertx_texture[2].UV[1] = 0.99;
-			billboard->vertx_texture[3].UV[0] = 0.25;
-			billboard->vertx_texture[3].UV[1] = 0.66;
-			break;			
-		}
-		// Reach right border.
-		if (billboard->vertx_texture[0].UV[0] >= 1.0){
-			// Decrease V of each vertex and reset U.
-			for (int j = 0; j < billboard->num_vertx; j++)
-				billboard->vertx_texture[j].UV[1] -= STEP_Y;
-			billboard->vertx_texture[0].UV[0] = 0.0;
-			billboard->vertx_texture[1].UV[0] = 0.25;
-			billboard->vertx_texture[2].UV[0] = 0.0;
-			billboard->vertx_texture[3].UV[0] = 0.25;
-			break;
+	int now = glutGet(GLUT_ELAPSED_TIME);
+	if(now - last_billboard_animation < ANIMATE_TIME) {
+		return;
+	}
+	last_billboard_animation = now;
+
+	if (	billboard->color_buffer_data[0] + billboard_step_x > 1.0 - UV_OFFSET ||
+		billboard->color_buffer_data[0] + billboard_step_x < 0.0 - UV_OFFSET){
+		// Decrease V of each vertex and reset U.
+
+		for (int j = 0; j < billboard->num_vertx; j++)
+				billboard->color_buffer_data[2*j + 1] -= billboard_step_y;
+
+		if(billboard_step_y > 0) {
+			
+			billboard->color_buffer_data[0] = 0.00 + UV_OFFSET;
+			billboard->color_buffer_data[2] = 0.25 + UV_OFFSET;
+			billboard->color_buffer_data[4] = 0.00 + UV_OFFSET;
+			billboard->color_buffer_data[6] = 0.25 + UV_OFFSET;
+			
+		} else {
+			billboard->color_buffer_data[0] = 0.75 + UV_OFFSET;
+			billboard->color_buffer_data[2] = 1.00 + UV_OFFSET;
+			billboard->color_buffer_data[4] = 0.75 + UV_OFFSET;
+			billboard->color_buffer_data[6] = 1.00 + UV_OFFSET;
 		}
 	}
+
+	// Reach down-right or  corner.
+	if (	(billboard->color_buffer_data[2] + billboard_step_x > 1.0 + UV_OFFSET && billboard->color_buffer_data[3] <= 0.00) ||
+		(billboard->color_buffer_data[0] + billboard_step_x < 0.0 + UV_OFFSET && billboard->color_buffer_data[1] >= 0.66) ){
+		// Reset U and V to start coordinate
+
+		printf("blub\n");
+		billboard_step_x *= -1.0;
+		billboard_step_y *= -1.0;		
+	}
+
+	for (int i = 0; i < billboard->num_vertx; i++){
+		billboard->color_buffer_data[2*i] += billboard_step_x;
+
+		printf("UV %d: %f %f\n", i, billboard->vertx_texture[i].UV[0], billboard->vertx_texture[i].UV[1]);
+	}
+
+	printf("\n\n");
 }
 
 /******************************************************************
@@ -243,8 +266,8 @@ void animate_billboard(){
 *******************************************************************/
 void on_idle(){
 	rotate_mobile(root);
-	display();
 	animate_billboard();
+	glutPostRedisplay();
 }
 
 /******************************************************************

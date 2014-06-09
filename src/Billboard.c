@@ -16,7 +16,7 @@ object_gl* init_board(){
 	board->vertx_per_vectr = 3;
 	board->rotation_spd = 0;
 	board->rotation_dir = 1;
-	board->alpha = 1.0;
+	board->alpha = 0.75;
 	board->vertx_buffer_data = malloc(board->num_vertx * 3 * sizeof(GLfloat));
 	board->normal_buffer_data = malloc(board->num_vertx * board->vertx_per_vectr * sizeof(GLfloat));
 	board->color_buffer_data = malloc(board->num_vertx * 2 * sizeof(GLfloat));
@@ -66,16 +66,16 @@ object_gl* create_board(float x1, float y1, float z1, float x2, float y2, float 
 	}
 
 	// Define UV coordinates for each vertex
-	board->color_buffer_data[0] = 0.0;
+	board->color_buffer_data[0] = 0.0 + UV_OFFSET;
 	board->color_buffer_data[1] = 0.66;
 
-	board->color_buffer_data[2] = 0.25;
+	board->color_buffer_data[2] = 0.25 + UV_OFFSET;
 	board->color_buffer_data[3] = 0.99;
 
-	board->color_buffer_data[4] = 0.0;
+	board->color_buffer_data[4] = 0.0 + UV_OFFSET;
 	board->color_buffer_data[5] = 0.99;
 
-	board->color_buffer_data[6] = 0.25;
+	board->color_buffer_data[6] = 0.25 + UV_OFFSET;
 	board->color_buffer_data[7] = 0.66;
 
 	// Define index

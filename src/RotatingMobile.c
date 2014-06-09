@@ -154,7 +154,7 @@ void display(){
 	glStencilFunc(GL_EQUAL, 1, 0xffffffff); 
   	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	double scale[] = { 1.0, -1.0, 1.0 };
-	double translation[] = { 0.0, 0.0, 0.0 };
+	double translation[] = { 0.0, -20.0, 0.0 };
 	draw_mobile_mirror(*root, scale, translation);
 	draw_single_mirror(billboard, proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT, scale, translation);
 
@@ -618,6 +618,9 @@ void window_close(){
 * main
 *******************************************************************/
 int main(int argc, char** argv) {
+	//init random
+	srand(time(NULL));
+
 	//init glut
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL);

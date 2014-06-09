@@ -164,12 +164,10 @@ void setup_texture(object_gl *object, char *filename)
 * returns a random picture for texturing out of an existing list.
 *******************************************************************/
 char* getRandomTexture(){
-	srand(time(NULL));
-
 	switch(rand() % 3){
-		case 0: return "data/marble.bmp";
-		case 1: return "data/honeycomb.bmp";
-		case 2: return "data/bricks.bmp";
+		case 0: return "data/mobile1.bmp";
+		case 1: return "data/mobile2.bmp";
+		case 2: return "data/mobile3.bmp";
 		default: return NULL;
 	}
 }

@@ -244,7 +244,7 @@ void animate_billboard(){
 void on_idle(){
 	rotate_mobile(root);
 	display();
-	//animate_billboard();
+	animate_billboard();
 }
 
 /******************************************************************
@@ -484,22 +484,26 @@ void mouse_input(int button, int state, int x, int y){
 *******************************************************************/
 void key_input(unsigned char key, int x, int y){
 	float rotation[16];
-	float translte[16];
+	float translte_camera[16];
+	//float translte_board[16];
 	GLfloat hsv[4] = {0.0, 1.0, 0.0, 1.0};
 	
 	printf("KEY  @ x:%d y:%d key:%c\n",x,y,key);		
 
-	SetTranslation(0.0, 0.0, CAMERA_DIST, translte);
-	MultiplyMatrix(translte, view_matrix, view_matrix);
-	MultiplyMatrix(translte, billboard->model_matrix, billboard->model_matrix);
+	SetTranslation(0.0, 0.0, CAMERA_DIST, translte_camera);
+	MultiplyMatrix(translte_camera, view_matrix, view_matrix);
+	//SetTranslation(0.0, 0.0, CAMERA_DIST, translte_camera);
+	//MultiplyMatrix(translte_board, billboard->model_matrix, billboard->model_matrix);
 
 	switch(key) {
 		case BTN_RIGHT: 	SetRotationY(CAMERA_ROTATE_ANGLE, rotation); 		 
 					MultiplyMatrix(rotation, view_matrix, view_matrix); 
+					SetRotationY(-CAMERA_ROTATE_ANGLE, rotation); 		 
 					MultiplyMatrix(rotation, billboard->model_matrix, billboard->model_matrix);
 					break;
 		case BTN_LEFT: 		SetRotationY(360 - CAMERA_ROTATE_ANGLE, rotation); 
 					MultiplyMatrix(rotation, view_matrix, view_matrix);
+					SetRotationY(-(360 - CAMERA_ROTATE_ANGLE), rotation); 	
 					MultiplyMatrix(rotation, billboard->model_matrix, billboard->model_matrix);
 					break;
 		case BTN_UP:		SetRotationX(CAMERA_ROTATE_ANGLE, rotation); 
@@ -573,9 +577,9 @@ void key_input(unsigned char key, int x, int y){
 					break;
 	};
 
-	SetTranslation(0.0, 0.0,CAMERA_DIST * -1, translte);
-	MultiplyMatrix(translte, view_matrix, view_matrix);
-	MultiplyMatrix(translte, billboard->model_matrix, billboard->model_matrix);
+	SetTranslation(0.0, 0.0,CAMERA_DIST * -1, translte_camera);
+	MultiplyMatrix(translte_camera, view_matrix, view_matrix);
+	//MultiplyMatrix(translte, billboard->model_matrix, billboard->model_matrix);
 }
 
 /******************************************************************

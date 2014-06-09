@@ -16,6 +16,7 @@ object_gl* init_board(){
 	board->vertx_per_vectr = 3;
 	board->rotation_spd = 0;
 	board->rotation_dir = 1;
+	board->alpha = 1.0;
 	board->vertx_buffer_data = malloc(board->num_vertx * 3 * sizeof(GLfloat));
 	board->normal_buffer_data = malloc(board->num_vertx * board->vertx_per_vectr * sizeof(GLfloat));
 	board->color_buffer_data = malloc(board->num_vertx * 2 * sizeof(GLfloat));

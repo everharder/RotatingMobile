@@ -1,5 +1,8 @@
-#User control
+#Rotating Mobile
+A mobile programmed in OpenGL, including lighting, texturing and mirror-like effects.
 
+
+#User control
 A short manual for using RotatingMobile.
 
 CAMERA:

@@ -1,5 +1,6 @@
 #include "OBJParserMobile.h"
 #include "Matrix.h"
+#include "Util.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -50,6 +51,7 @@ node_object* parse_mobile(char *filename) {
 		fscanf(fp, "%d\n",  &nodes[curr_obj]->obj.vertx_per_vectr);
 		fscanf(fp, "%f\n",  &nodes[curr_obj]->obj.rotation_spd);
 		fscanf(fp, "%hd\n",  &nodes[curr_obj]->obj.rotation_dir);
+		fscanf(fp, "a %f\n",  &nodes[curr_obj]->obj.alpha);
 		#ifdef _DEBUG__DEBUG_OBJPARSER_
 			printf("\n\nnum_vertx: %d\nnum_vectr: %d\nvertx_per_vectr: %d\n", nodes[curr_obj]->obj.num_vertx,
 											  nodes[curr_obj]->obj.num_vectr,
@@ -59,7 +61,7 @@ node_object* parse_mobile(char *filename) {
 		#endif
 
 		nodes[curr_obj]->obj.vertx_buffer_data = malloc(nodes[curr_obj]->obj.num_vertx * 3 * sizeof(GLfloat));
-		nodes[curr_obj]->obj.color_buffer_data = malloc(nodes[curr_obj]->obj.num_vertx * 3 * sizeof(GLfloat));
+		nodes[curr_obj]->obj.color_buffer_data = malloc(nodes[curr_obj]->obj.num_vertx * 2 * sizeof(GLfloat));
 		nodes[curr_obj]->obj.index_buffer_data = malloc(nodes[curr_obj]->obj.num_vectr * nodes[curr_obj]->obj.vertx_per_vectr * sizeof(GLushort));
 		nodes[curr_obj]->obj.normal_buffer_data = malloc(nodes[curr_obj]->obj.num_vertx * 3 * sizeof(GLfloat));
 
@@ -85,12 +87,11 @@ node_object* parse_mobile(char *filename) {
 
 		//read color data
 		for(int i=0; i < nodes[curr_obj]->obj.num_vertx; i++) {
-			fscanf(fp,"c %f %f %f\n", &nodes[curr_obj]->obj.color_buffer_data[3*i + 0], 
-						   &nodes[curr_obj]->obj.color_buffer_data[3*i + 1],
-						   &nodes[curr_obj]->obj.color_buffer_data[3*i + 2]);
+			fscanf(fp,"c %f %f\n", &nodes[curr_obj]->obj.color_buffer_data[2*i + 0], 
+						   &nodes[curr_obj]->obj.color_buffer_data[2*i + 1]);
 		}
 		#ifdef _DEBUG__DEBUG_OBJPARSER_
-			print_matrix("color data", nodes[curr_obj]->obj.color_buffer_data, 3, nodes[curr_obj]->obj.num_vertx);
+			print_matrix("color data", nodes[curr_obj]->obj.color_buffer_data, 2, nodes[curr_obj]->obj.num_vertx);
 		#endif
 
 		//read index data
@@ -115,6 +116,8 @@ node_object* parse_mobile(char *filename) {
 		SetTranslation(x, y, z, transl);
 		SetIdentityMatrix(nodes[curr_obj]->obj.model_matrix);
 		MultiplyMatrix(transl, nodes[curr_obj]->obj.model_matrix, nodes[curr_obj]->obj.model_matrix);
+		/* Init texture of object */
+		setup_texture(&(nodes[curr_obj]->obj), getRandomTexture());
 	}
 	
 	//link parents to childs

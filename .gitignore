@@ -3,3 +3,5 @@ RotatingMobile
 *.h~
 *.o~
 *.obj~
+*.vs~
+*.fs~

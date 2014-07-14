@@ -1,10 +1,11 @@
 /******************************************************************
-* PROGRAMMING EXERCISE 2 - Rotating Mobile
+* PROGRAMMING EXERCISE 3 - Rotating Mobile
 * authors: 	Daniel Eberharter
 *	  	Stefan Haselwanter
-* date: 	07.04.2014   
+* date: 	10.06.2014   
 * version:	1.0
-* desc.:	draws and animates a simple rotating mobile 
+* desc.:	draws and animates a simple rotating mobile with
+		basic mirroring, texturing and billboarding
 
 		the code may contain fragments of the programming
 		example no. 2 from Prof. Matthias Harders.
@@ -32,6 +33,7 @@
 #include "LoadShader.h"  
 #include "Matrix.h"  
 #include "Wall.h"
+#include "Billboard.h"
 #include "Util.h"
 
 #ifndef M_PI
@@ -63,25 +65,25 @@
 
 
 //Shaders
-#define GOURAUD_VS		"vertexshader_gouraud.vs"
-#define GOURAUD_FS		"fragmentshader_gouraud.fs"
+#define GOURAUD_VS		"shaders/vertexshader_gouraud.vs"
+#define GOURAUD_FS		"shaders/fragmentshader_gouraud.fs"
 #define GOURAUD_SHADER_CONST	0
-#define PHONG_VS		"vertexshader_phong.vs"
-#define PHONG_FS		"fragmentshader_phong.fs"
+#define PHONG_VS		"shaders/vertexshader_phong.vs"
+#define PHONG_FS		"shaders/fragmentshader_phong.fs"
 #define PHONG_SHADER_CONST	1
 #define INIT_SHADER_CONST	GOURAUD_SHADER_CONST
 
 #define NUM_LIGHT		2
-#define NUM_WALLS		3
+#define NUM_WALLS		1
 
 //Lighting
-#define LIGHT0_POSITION		{ 10.0, 10.0,  0.0,  1.0 }
+#define LIGHT0_POSITION		{ 10.0, 10.0, 10.0,  1.0 }
 #define LIGHT0_INTENSITY	{  1.0,  1.0,  1.0,  1.0 }
 #define LIGHT0_SPECULAR		{  1.0,  1.0,  1.0,  1.0 }
 #define LIGHT0_AMBIENT		{  1.0,  0.0,  0.0,  1.0 }
 #define LIGHT0_DIFFUSE		{  1.0,  1.0,  1.0,  1.0 }
 
-#define LIGHT1_POSITION		{-10.0,  0.0, 10.0,  1.0 }
+#define LIGHT1_POSITION		{-10.0, 10.0, 10.0,  1.0 }
 #define LIGHT1_INTENSITY	{  1.0,  1.0,  1.0,  1.0 }
 #define LIGHT1_SPECULAR		{  1.0,  1.0,  1.0,  1.0 }
 #define LIGHT1_AMBIENT		{  1.0,  1.0,  1.0,  1.0 }
@@ -100,8 +102,13 @@ float proj_matrix[16];
 float view_matrix[16]; 	
 
 node_object *root;
-object_gl *walls[NUM_WALLS];	
+object_gl *walls[NUM_WALLS];
+object_gl *billboard;
 lightsource light[NUM_LIGHT];
+int last_billboard_animation = 0;
+
+float billboard_step_x = STEP_X;
+float billboard_step_y = STEP_Y;
 
 
 /******************************************************************
@@ -117,21 +124,55 @@ void draw_mobile(node_object node){
 		draw_mobile(*(node.child_r));
 }
 
+void draw_mobile_mirror(node_object node, double *scale, double *translation){
+	draw_single_mirror(&(node.obj), proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT, scale, translation);
+
+	if(node.child_l != NULL)
+		draw_mobile_mirror(*(node.child_l), scale, translation);
+
+	if(node.child_r != NULL)
+		draw_mobile_mirror(*(node.child_r), scale, translation);
+}
+
 /******************************************************************
 * display
 
 *******************************************************************/
 void display(){
 	//clear screen
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
-	//draw walls
-	draw_n(walls, NUM_WALLS, proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
+	//fill stencil buffer
+	glEnable(GL_STENCIL_TEST);
+	glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+	glStencilFunc(GL_ALWAYS, 1, 0xFFFFFFFF);
+
+	draw_single(walls[0], proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
+
+ 	// reenabled color/depth 
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
+
+  	// draw reflection
+	glStencilFunc(GL_EQUAL, 1, 0xffffffff); 
+  	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	double scale[] = { 1.0, -1.0, 1.0 };
+	double translation[] = { 0.0, -20.0, 0.0 };
+	draw_mobile_mirror(*root, scale, translation);
+	draw_single_mirror(billboard, proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT, scale, translation);
 
 	//draw actual objects
-	draw_mobile(*root);
+	glDisable(GL_STENCIL_TEST);
 
-	/* Swap between front and back buffer */ 
+	draw_mobile(*root);
+	draw_single(billboard, proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
+
+	glEnable (GL_BLEND); 
+	glBlendFunc (GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	draw_single(walls[0], proj_matrix, view_matrix, shader_program[shader_idx], light, NUM_LIGHT);
+  
 	glutSwapBuffers();
 }
 
@@ -169,11 +210,64 @@ void rotate_mobile(node_object *node) {
 }
 
 /******************************************************************
+* animate billboard
+* Iterate through UV coordinates from top-left to down-right.
+*******************************************************************/
+void animate_billboard(){
+	int now = glutGet(GLUT_ELAPSED_TIME);
+	if(now - last_billboard_animation < ANIMATE_TIME) {
+		return;
+	}
+	last_billboard_animation = now;
+
+	if (	billboard->color_buffer_data[0] + billboard_step_x > 1.0 - UV_OFFSET ||
+		billboard->color_buffer_data[0] + billboard_step_x < 0.0 - UV_OFFSET){
+		// Decrease V of each vertex and reset U.
+
+		for (int j = 0; j < billboard->num_vertx; j++)
+				billboard->color_buffer_data[2*j + 1] -= billboard_step_y;
+
+		if(billboard_step_y > 0) {
+			
+			billboard->color_buffer_data[0] = 0.00 + UV_OFFSET;
+			billboard->color_buffer_data[2] = 0.25 + UV_OFFSET;
+			billboard->color_buffer_data[4] = 0.00 + UV_OFFSET;
+			billboard->color_buffer_data[6] = 0.25 + UV_OFFSET;
+			
+		} else {
+			billboard->color_buffer_data[0] = 0.75 + UV_OFFSET;
+			billboard->color_buffer_data[2] = 1.00 + UV_OFFSET;
+			billboard->color_buffer_data[4] = 0.75 + UV_OFFSET;
+			billboard->color_buffer_data[6] = 1.00 + UV_OFFSET;
+		}
+	}
+
+	// Reach down-right or  corner.
+	if (	(billboard->color_buffer_data[2] + billboard_step_x > 1.0 + UV_OFFSET && billboard->color_buffer_data[3] <= 0.00) ||
+		(billboard->color_buffer_data[0] + billboard_step_x < 0.0 + UV_OFFSET && billboard->color_buffer_data[1] >= 0.66) ){
+		// Reset U and V to start coordinate
+
+		printf("blub\n");
+		billboard_step_x *= -1.0;
+		billboard_step_y *= -1.0;		
+	}
+
+	for (int i = 0; i < billboard->num_vertx; i++){
+		billboard->color_buffer_data[2*i] += billboard_step_x;
+
+		printf("UV %d: %f %f\n", i, billboard->vertx_texture[i].UV[0], billboard->vertx_texture[i].UV[1]);
+	}
+
+	printf("\n\n");
+}
+
+/******************************************************************
 * on idle
 *******************************************************************/
 void on_idle(){
 	rotate_mobile(root);
-	display();
+	animate_billboard();
+	glutPostRedisplay();
 }
 
 /******************************************************************
@@ -281,7 +375,7 @@ void init_object_mobile(node_object *node) {
 * init objects
 *******************************************************************/
 void init_objects() {
-	root = parse_mobile("mobile.obj");
+	root = parse_mobile("data/mobile.obj");
 
 	if(root == NULL) {
 		printf("error parsing file...\n");
@@ -289,12 +383,19 @@ void init_objects() {
 	}
 
 	// Walls
-	walls[0] = create_wallXY(-20.0,-20.0,-20.0, 20.0, 20.0,-20.0, 0.3, 0.3, 0.3);
-	walls[1] = create_wallXZ(-20.0,-20.0,-20.0, 20.0,-20.0, 20.0, 0.3, 0.3, 0.3);
-	walls[2] = create_wallYZ(-20.0,-20.0,-20.0,-20.0, 20.0, 20.0, 0.3, 0.3, 0.3);
+	walls[0] = create_wallXZ(-20.0,-20.0,-20.0, 20.0,-20.0, 20.0, "data/mirror.bmp");
+	walls[0]->alpha = 0.1;
 
-	if(walls[0] == NULL || walls[1] == NULL || walls[2] == NULL){
-		printf("error creating grids...\n");
+	// Billboard
+	billboard = create_board(-2.0, 6.0, 0.0, 2.0, 12.0, 0.0);
+
+	if(walls[0] == NULL){
+		printf("error creating grid...\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if(billboard == NULL){
+		printf("error creating billboard...\n");
 		exit(EXIT_FAILURE);
 	}
 }
@@ -347,8 +448,6 @@ void init_lights() {
 	light[1].flag_diffuse  = 1;
 	light[1].flag_specular = 1;
 
-
-
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
@@ -372,6 +471,8 @@ void initialize(void){
 
 	for(int i=0; i < NUM_WALLS; i++) 
 		init_object(walls[i]);
+
+	init_object(billboard);
 
 	/* Init Lighting */
 	init_lights();
@@ -406,20 +507,27 @@ void mouse_input(int button, int state, int x, int y){
 *******************************************************************/
 void key_input(unsigned char key, int x, int y){
 	float rotation[16];
-	float translte[16];
+	float translte_camera[16];
+	//float translte_board[16];
 	GLfloat hsv[4] = {0.0, 1.0, 0.0, 1.0};
 	
 	printf("KEY  @ x:%d y:%d key:%c\n",x,y,key);		
 
-	SetTranslation(0.0, 0.0, CAMERA_DIST, translte);
-	MultiplyMatrix(translte, view_matrix, view_matrix);
+	SetTranslation(0.0, 0.0, CAMERA_DIST, translte_camera);
+	MultiplyMatrix(translte_camera, view_matrix, view_matrix);
+	//SetTranslation(0.0, 0.0, CAMERA_DIST, translte_camera);
+	//MultiplyMatrix(translte_board, billboard->model_matrix, billboard->model_matrix);
 
 	switch(key) {
 		case BTN_RIGHT: 	SetRotationY(CAMERA_ROTATE_ANGLE, rotation); 		 
 					MultiplyMatrix(rotation, view_matrix, view_matrix); 
+					SetRotationY(-CAMERA_ROTATE_ANGLE, rotation); 		 
+					MultiplyMatrix(rotation, billboard->model_matrix, billboard->model_matrix);
 					break;
 		case BTN_LEFT: 		SetRotationY(360 - CAMERA_ROTATE_ANGLE, rotation); 
-					MultiplyMatrix(rotation, view_matrix, view_matrix); 
+					MultiplyMatrix(rotation, view_matrix, view_matrix);
+					SetRotationY(-(360 - CAMERA_ROTATE_ANGLE), rotation); 	
+					MultiplyMatrix(rotation, billboard->model_matrix, billboard->model_matrix);
 					break;
 		case BTN_UP:		SetRotationX(CAMERA_ROTATE_ANGLE, rotation); 
 					MultiplyMatrix(rotation, view_matrix, view_matrix); 
@@ -492,8 +600,9 @@ void key_input(unsigned char key, int x, int y){
 					break;
 	};
 
-	SetTranslation(0.0, 0.0,CAMERA_DIST * -1, translte);
-	MultiplyMatrix(translte, view_matrix, view_matrix); 
+	SetTranslation(0.0, 0.0,CAMERA_DIST * -1, translte_camera);
+	MultiplyMatrix(translte_camera, view_matrix, view_matrix);
+	//MultiplyMatrix(translte, billboard->model_matrix, billboard->model_matrix);
 }
 
 /******************************************************************
@@ -532,12 +641,15 @@ void window_close(){
 * main
 *******************************************************************/
 int main(int argc, char** argv) {
+	//init random
+	srand(time(NULL));
+
 	//init glut
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL);
 	glutInitWindowSize(600, 600);
 	glutInitWindowPosition(400, 400);
-	glutCreateWindow("CG ProgrammingExercise 2 - Eberharter/Haselwanter");
+	glutCreateWindow("CG ProgrammingExercise 3 - Eberharter/Haselwanter");
 
 	//init glew
 	GLenum res = glewInit();

@@ -1,5 +1,6 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
+#include "LoadTexture.h"
 
 #ifndef __OBJECTGL_H__
 #define __OBJECTGL_H__
@@ -12,7 +13,13 @@
 #define REFL_FACTOR_DIFFUSE	0.4
 #define REFL_FACTOR_SPECULAR	1.0 
 
-enum DataID {vPosition = 0, vNormal = 1, vColor = 2}; 
+enum DataID {vPosition = 0,  vTexture = 1, vNormal = 2}; 
+
+typedef struct 
+{
+    GLfloat Position[3];
+    GLfloat UV[2];
+} VertexData;
 
 typedef struct {
 	float model_matrix[16];
@@ -27,6 +34,11 @@ typedef struct {
 	GLfloat  *color_buffer_data;
 	GLushort *index_buffer_data;
 	GLfloat  *normal_buffer_data;
+
+	VertexData *vertx_texture;
+	TextureDataPtr texture;
+	GLuint texture_id;
+	float alpha;
 
 	int num_vertx;
 	int num_vectr;
@@ -53,9 +65,9 @@ typedef struct lightsource {
 	int flag_specular;
 } lightsource;
 
-
 void init_object(object_gl *object);
 void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLuint shader_program, lightsource *light, int num_lights);
+void draw_single_mirror(object_gl *object, float *proj_matrix, float *view_matrix, GLuint shader_program, lightsource *light, int num_lights, double *scale, double *translation);
 void draw_n     (object_gl **objects, int n, float *proj_matrix, float *view_matrix, GLuint shader_program, lightsource *light, int num_lights);
 void orbit_object (object_gl *object, object_gl *center, float degree);
 void rotate_object(object_gl *object, float degree);

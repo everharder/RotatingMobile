@@ -1,5 +1,6 @@
 #include "ObjectGl.h"
 #include "Matrix.h"
+#include "Util.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -10,16 +11,39 @@
 * binds buffers to object
 *******************************************************************/
 void init_object(object_gl *object) {
+	// FIXME Necessary??
 	glGenBuffers(1, &(object->vbo));
+	// FIXME Necessary??
 	glGenBuffers(1, &(object->cbo));
+
 	glGenBuffers(1, &(object->nbo));
 	glGenBuffers(1, &(object->ibo));
 
-	glBindBuffer(GL_ARRAY_BUFFER, object->vbo);
+	object->vertx_texture = malloc(sizeof(VertexData) * object->num_vertx);
+	/* Copy vertex and color data to new texture buffer */
+	for(int i=0; i < object->num_vertx; i++) {
+		object->vertx_texture[i].Position[0] = object->vertx_buffer_data[3*i + 0];
+		object->vertx_texture[i].Position[1] = object->vertx_buffer_data[3*i + 1];
+		object->vertx_texture[i].Position[2] = object->vertx_buffer_data[3*i + 2];
+
+		object->vertx_texture[i].UV[0] = object->color_buffer_data[2*i + 0];
+		object->vertx_texture[i].UV[1] = object->color_buffer_data[2*i + 1];
+	}
+
+  
+    	/* Create new buffer object and assign name */
+	// FIXME Necessary??
+    	glBindBuffer(GL_ARRAY_BUFFER, object->vbo);
+ 
+    	/* Load data into buffer object */
+    	glBufferData(GL_ARRAY_BUFFER, sizeof(VertexData) * object->num_vertx, object->vertx_texture, GL_STATIC_DRAW);
+
+/*	glBindBuffer(GL_ARRAY_BUFFER, object->vbo);
 	glBufferData(GL_ARRAY_BUFFER, object->num_vertx * 3 * sizeof(GLfloat), object->vertx_buffer_data, GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ARRAY_BUFFER, object->cbo);
-	glBufferData(GL_ARRAY_BUFFER, object->num_vertx * 3 * sizeof(GLfloat), object->color_buffer_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, object->num_vertx * 2 * sizeof(GLfloat), object->color_buffer_data, GL_STATIC_DRAW);*/
+
 
 	glBindBuffer(GL_ARRAY_BUFFER, object->nbo);
 	glBufferData(GL_ARRAY_BUFFER, object->num_vertx * 3 * sizeof(GLfloat), object->normal_buffer_data, GL_STATIC_DRAW);
@@ -32,15 +56,25 @@ void init_object(object_gl *object) {
 * DrawSingle
 *******************************************************************/
 void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLuint shader_program, lightsource *light, int num_lights) {
-	//put position data
-	glEnableVertexAttribArray(vPosition);
+	// FIXME Necessary??	
 	glBindBuffer(GL_ARRAY_BUFFER, object->vbo);
-	glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-	//put color data
-	glEnableVertexAttribArray(vColor);
-	glBindBuffer(GL_ARRAY_BUFFER, object->cbo);
-	glVertexAttribPointer(vColor, 3, GL_FLOAT,GL_FALSE, 0, 0);
+	/* Activate first (and only) texture unit */
+	glActiveTexture(GL_TEXTURE0);
+
+    	/* Bind current texture  */
+	glBindTexture(GL_TEXTURE_2D, object->texture_id);
+	    
+    	/* Get texture uniform handle from fragment shader */ 
+	GLuint TextureUniform = glGetUniformLocation(shader_program, "TextureSampler");
+	glUniform1i(TextureUniform, 0);
+	
+	/* Set location of uniform sampler variable */ 
+	glEnableVertexAttribArray(vPosition);
+	glEnableVertexAttribArray(vTexture);	
+
+	glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), 0);
+    	glVertexAttribPointer(vTexture, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (const GLvoid*) (3 * sizeof(GLfloat))); 
 
 	//init normals
 	GLfloat *normals = malloc(object->num_vertx * 3);
@@ -91,6 +125,8 @@ void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLui
 	glUniform1i(uniform_flag_diffuse,  light[0].flag_diffuse);
 	glUniform1i(uniform_flag_specular, light[0].flag_specular);
 
+	GLint uniform_alpha = glGetUniformLocation(shader_program, "alpha");
+	glUniform1f(uniform_alpha, object->alpha);
 
 	GLint uniform_light_intensity = glGetUniformLocation(shader_program, "Li");
 	GLint uniform_light_ambient   = glGetUniformLocation(shader_program, "La");
@@ -161,7 +197,40 @@ void draw_single(object_gl *object, float *proj_matrix, float *view_matrix, GLui
 	/* Disable attributes */
 	glDisableVertexAttribArray(vPosition);
 	glDisableVertexAttribArray(vNormal);
-	glDisableVertexAttribArray(vColor);
+	//glDisableVertexAttribArray(vColor);
+	glDisableVertexAttribArray(vTexture);   
+}
+
+void draw_single_mirror(object_gl *object, float *proj_matrix, float *view_matrix, GLuint shader_program, lightsource *light, int num_lights, double *scale, double *translation) {
+	float translationMatrix[16];
+
+	for(int i = 0; i < object->num_vertx * 3; i+=3) {	
+		object->vertx_buffer_data[i + 0] *= scale[0];
+		object->vertx_buffer_data[i + 1] *= scale[1];
+		object->vertx_buffer_data[i + 2] *= scale[2];
+	}
+
+	object->model_matrix[ 3] *= scale[0];
+	object->model_matrix[ 7] *= scale[1];
+	object->model_matrix[11] *= scale[2];
+	SetTranslation(translation[0], translation[1], translation[2], translationMatrix);
+	MultiplyMatrix(translationMatrix, object->model_matrix, object->model_matrix);
+	init_object(object);
+
+	draw_single(object, proj_matrix, view_matrix, shader_program, light, num_lights);
+
+	//revert
+	SetTranslation(-translation[0], -translation[1], -translation[2], translationMatrix);
+	MultiplyMatrix(translationMatrix, object->model_matrix, object->model_matrix);
+	object->model_matrix[ 3] /= scale[0];
+	object->model_matrix[ 7] /= scale[1];
+	object->model_matrix[11] /= scale[2];
+	for(int i = 0; i < object->num_vertx * 3; i+=3) {	
+		object->vertx_buffer_data[i + 0] /= scale[0];
+		object->vertx_buffer_data[i + 1] /= scale[1];
+		object->vertx_buffer_data[i + 2] /= scale[2];
+	}
+	init_object(object);
 }
 
 /******************************************************************

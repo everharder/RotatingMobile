@@ -1,13 +1,16 @@
 #version 330
 
 in vec4 vertexPosition;
-in vec4 vertexColor;
+in vec2 UVcoords;
 in vec4 normalDirection;
-
 
 uniform int flag_ambient;
 uniform int flag_diffuse;
 uniform int flag_specular;
+
+uniform float alpha;
+
+uniform sampler2D TextureSampler;
 
 uniform vec4 Li[2]; // light intensity
 uniform vec4 Lp[2]; // light position
@@ -53,5 +56,6 @@ void main()
 			interpColor += Li[i] * Ks[i] * phongTerm;
 	}
 
-	outColor = interpColor * vertexColor;
+	outColor = interpColor * texture2D(TextureSampler, UVcoords);
+	outColor.a = alpha;
 }
